@@ -99,9 +99,16 @@ export default class SimonGame extends GameEngine {
     return this.pads[this.sequence[this.step]];
   }
 
-  /** Replaying the sequence is the only sensible give-away here. */
+  /**
+   * Enter the next pad for them. Replaying the sequence — which is what
+   * this used to do — leaves a child who cannot follow it exactly where
+   * they were, so the level never ended however long they tried.
+   */
   solveStep() {
-    this.playSequence();
+    if (this.solved || this.destroyed) return;
+    this.accepting = true;
+    const i = this.sequence[this.step];
+    this.pads[i]?.click();
   }
 
   async autoSolve() {

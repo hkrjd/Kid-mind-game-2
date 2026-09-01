@@ -323,16 +323,34 @@ if (!quick) {
   for (const level of sample) {
     await openLevel(level.id);
 
-    // A child who taps wrong, over and over, and never once right.
+    // A child who never gets anywhere. In most games that means tapping
+    // the wrong thing over and over; in the maze and the tracing game
+    // there is nothing to get wrong, so it means simply not making
+    // progress — and that path has to be exercised the same way, or a
+    // game whose ladder can never fire would still look fine here.
     const result = await page.evaluate(async () => {
       const e = window.__engine;
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       let sawHint = false;
-      for (let i = 0; i < 24 && !e.solved && !e.destroyed; i++) {
-        e.wrong(null);
-        await sleep(260);
+      const noteHint = () => {
         if (e.hintsUsed > 0 || document.querySelector('.tile--hint')) sawHint = true;
-        await sleep(560);
+      };
+
+      if (e.idleMs) {
+        // Stall completely: touch nothing at all and let the clock run.
+        e.idleMs = 350;              // the real wait is 14s; shorten it here
+        e.noteProgress();
+        for (let i = 0; i < 90 && !e.solved && !e.destroyed; i++) {
+          await sleep(180);
+          noteHint();
+        }
+      } else {
+        for (let i = 0; i < 24 && !e.solved && !e.destroyed; i++) {
+          e.wrong(null);
+          await sleep(260);
+          noteHint();
+          await sleep(560);
+        }
       }
       // win() sets solved immediately but appends the reward overlay
       // after a beat, so wait for the overlay itself, not the flag.
@@ -348,7 +366,7 @@ if (!quick) {
 
     if (!result.solved) {
       findings.push({ level: level.id, engine: level.engine, tier: level.tier, kind: 'stuck',
-        why: `never finished after ${result.mistakes} wrong taps (hints used: ${result.hintsUsed}) — a child could be stranded here` });
+        why: `never finished (${result.mistakes} wrong taps, ${result.hintsUsed} hints) — a child could be stranded here` });
     } else if (!result.sawHint) {
       findings.push({ level: level.id, engine: level.engine, tier: level.tier, kind: 'stuck',
         why: 'finished but never offered a hint on the way' });

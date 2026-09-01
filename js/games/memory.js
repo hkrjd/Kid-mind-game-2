@@ -18,6 +18,12 @@ export default class MemoryGame extends GameEngine {
   static id = 'memory';
   static skills = ['memory'];
 
+  /* Even a real lapse — forgetting a card you have already been shown
+     twice — is ordinary at this age, so the ladder starts later here
+     than in a game where a wrong tap is simply a wrong answer. */
+  static hintAfter = 3;
+  static solveAfter = 6;
+
   build(field) {
     // Cards come in pairs, so fit the deck and then round down to a
     // whole number of pairs.
@@ -31,6 +37,12 @@ export default class MemoryGame extends GameEngine {
     this.matched = 0;
     this.flipped = [];
     this.busy = false;
+    /* Which pictures the child has already been shown. Turning over two
+       cards you have never seen is not a mistake — it is the only way
+       to find out what is where. Counting it as one made the game solve
+       itself: simulated over 20,000 games, a six-pair board hit the
+       give-away in more than half of otherwise normal play. */
+    this.seen = new Set();
 
     this.cards = deck.map((item) => {
       const card = el('button.tile.card-back', {
@@ -66,6 +78,7 @@ export default class MemoryGame extends GameEngine {
     this.flipped = [];
 
     if (a._item.e === b._item.e) {
+      this.seen.add(a._item.e);
       a._done = b._done = true;
       this.matched++;
       sfx('match');
@@ -75,9 +88,19 @@ export default class MemoryGame extends GameEngine {
       this.busy = false;
       if (this.matched === this.total) this.after(500, () => this.win());
     } else {
+      // A lapse only counts when the child had already been shown both
+      // of these pictures. Otherwise this was information-gathering.
+      const knewBoth = this.seen.has(a._item.e) && this.seen.has(b._item.e);
+      this.seen.add(a._item.e);
+      this.seen.add(b._item.e);
+
       // Hold the mismatch on screen long enough to actually be seen
       // and remembered — this is the whole point of the game.
-      this.wrong(b);
+      if (knewBoth) {
+        this.wrong(b);
+      } else {
+        sfx('oops');
+      }
       if (!(await this.wait(1100))) return;
       this.face(a, false);
       this.face(b, false);

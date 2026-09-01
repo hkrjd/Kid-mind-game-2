@@ -27,6 +27,8 @@ globalThis.document = {
   }),
 };
 
+import { readFileSync } from 'node:fs';
+
 const { Rng } = await import('../js/core/rng.js');
 const i18n = await import('../js/core/i18n.js');
 const catalog = await import('../js/core/catalog.js');
@@ -264,6 +266,20 @@ group('content packs', () => {
     ok(`${id}: can hint`,
       typeof proto?.hintTarget === 'function' || Object.hasOwn(proto ?? {}, 'giveHint'));
     ok(`${id}: can solve the step for them`, typeof proto?.solveStep === 'function');
+
+    /*
+     * Having the methods is not enough — something has to CALL them.
+     * Most games escalate from a wrong answer. The maze and the tracing
+     * game have no wrong answer to escalate from, so they must arm the
+     * idle timer instead. An engine with neither has a ladder that can
+     * never fire, and a child who cannot do it is stranded with no way
+     * out of the level. Checked against the source, because whether the
+     * call exists is not observable from the prototype.
+     */
+    const src = readFileSync(new URL(`../js/games/${spec.module}.js`, import.meta.url), 'utf8');
+    ok(`${id}: something actually triggers the help ladder`,
+      /this\.wrong\(/.test(src) || /this\.startIdleHelp\(/.test(src),
+      'neither wrong() nor startIdleHelp() is ever called');
     ok(`${id}: can be driven by the test suite`, typeof proto?.autoSolve === 'function');
     ok(`${id}: builds a level`, typeof proto?.build === 'function');
   }

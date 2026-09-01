@@ -91,6 +91,9 @@ export default class TracingGame extends GameEngine {
     field.appendChild(wrap);
 
     this.bindPointer();
+    // There is no way to trace "wrongly", only to make no headway, so
+    // this game's help ladder runs on a timer too.
+    this.startIdleHelp();
 
     this.cleanup(fitSquareCanvas(this.canvas, (side) => this.onResize(side)));
   }
@@ -187,7 +190,10 @@ export default class TracingGame extends GameEngine {
       if (w.hit) continue;
       if (Math.hypot(w.x - x, w.y - y) <= TOLERANCE) { w.hit = true; newHits++; }
     }
-    if (newHits) sfx('count', this.waypoints.filter((w) => w.hit).length);
+    if (newHits) {
+      this.noteProgress();
+      sfx('count', this.waypoints.filter((w) => w.hit).length);
+    }
 
     this.draw();
 

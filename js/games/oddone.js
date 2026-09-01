@@ -36,37 +36,46 @@ export default class OddOneGame extends GameEngine {
   }
 
   /**
-   * Tier 0-1: the odd one comes from a different pack entirely.
-   * Tier 2: everything comes from one pack and only a single
-   * attribute (colour, or shape) differs — much harder.
+   * Tier 0-1: the odd one comes from a different pack entirely — a kite
+   * among fruit. Obvious, which is the point at these tiers.
+   *
+   * Tier 2: five DIFFERENT things that happen to share a colour, plus
+   * one of another colour. That is a real step up, because the child
+   * has to notice the property rather than the picture.
    */
   pickSet(n) {
-    const items = this.pack.items;
-
     if (this.tier < 2) {
       const otherId = this.rng.pick(GENERIC_PACK_IDS.filter((p) => p !== this.pack.id));
       const other = getPack(otherId);
-      return { same: this.rng.sample(items, n - 1), odd: this.rng.pick(other.items) };
+      return {
+        same: this.rng.sample(this.pack.items, n - 1),
+        odd: this.rng.pick(other.items),
+      };
     }
 
-    // Group by colour and look for a group big enough to fill the
-    // board, leaving an outsider of a different colour.
+    // Pool every generic pack: no single pack has enough items of one
+    // colour, and drawing from just one used to fall back to showing the
+    // same picture five times — which made the hardest tier the easiest.
+    const pool = GENERIC_PACK_IDS.flatMap((id) => getPack(id).items);
     const byColor = {};
-    items.forEach((it) => (byColor[it.c] ??= []).push(it));
-    const big = Object.entries(byColor)
-      .filter(([, list]) => list.length >= n - 1)
+    for (const it of pool) (byColor[it.c] ??= []).push(it);
+
+    const usable = Object.entries(byColor)
+      .filter(([, list]) => new Set(list.map((i) => i.e)).size >= n - 1)
       .map(([c]) => c);
 
-    if (big.length) {
-      const color = this.rng.pick(big);
-      const odd = this.rng.pick(items.filter((it) => it.c !== color));
-      if (odd) return { same: this.rng.sample(byColor[color], n - 1), odd };
-    }
+    const color = this.rng.pick(usable);
+    // Distinct pictures, so the puzzle is about colour, not repetition.
+    const seen = new Set();
+    const family = this.rng.shuffle(byColor[color]).filter((it) => {
+      if (seen.has(it.e)) return false;
+      seen.add(it.e);
+      return true;
+    });
 
-    // Fallback for a pack with no large colour group: repeat one
-    // item and make a single different item the odd one out.
-    const [a, b] = this.rng.sample(items, 2);
-    return { same: Array.from({ length: n - 1 }, () => a), odd: b };
+    const same = family.slice(0, n - 1);
+    const odd = this.rng.pick(pool.filter((it) => it.c !== color && !seen.has(it.e)));
+    return { same, odd };
   }
 
   tap(node) {

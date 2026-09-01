@@ -36,6 +36,9 @@ export default class MazeGame extends GameEngine {
     field.appendChild(wrap);
 
     this.bindPointer();
+    // Bumping into a wall is not a wrong answer, so nothing here ever
+    // calls wrong(). Help has to arrive on a timer instead.
+    this.startIdleHelp();
 
     this.cleanup(fitSquareCanvas(this.canvas, (side) => this.onResize(side)));
   }
@@ -200,6 +203,7 @@ export default class MazeGame extends GameEngine {
     if (this.path.includes(target)) return;  // no crossing our own trail
 
     this.path.push(target);
+    this.noteProgress();
     sfx('count', this.path.length);
     this.draw();
 

@@ -19,6 +19,9 @@ import { t, randomPraise, randomOops } from './i18n.js';
 import { speak, sfx, say } from './audio.js';
 import { noteStruggle, struggleFor, getSetting } from './state.js';
 
+/* Default rungs of the help ladder. Engines override them when a wrong
+   move means something different in their game — turning over two cards
+   you have never seen is how you play concentration, not an error. */
 const HINT_AFTER = 2;
 const SOLVE_AFTER = 4;
 
@@ -26,6 +29,10 @@ export class GameEngine {
   /** Subclasses override. `skills` is metadata for the world map. */
   static id = 'base';
   static skills = [];
+
+  /** Mistakes before the answer pulses, and before the game does it. */
+  static hintAfter = HINT_AFTER;
+  static solveAfter = SOLVE_AFTER;
 
   /**
    * ctx: { level, rng, pack, tier, onExit, onNext }
@@ -169,14 +176,44 @@ export class GameEngine {
     else sfx('oops');
     this.mistakes++;
 
-    if (this.mistakes === HINT_AFTER) {
+    if (this.mistakes === this.constructor.hintAfter) {
       speak(randomOops(this.rng));
       this.after(700, () => this.giveHint());
-    } else if (this.mistakes >= SOLVE_AFTER) {
+    } else if (this.mistakes >= this.constructor.solveAfter) {
       this.after(700, () => this.giveAway());
     } else {
       speak(randomOops(this.rng));
     }
+  }
+
+  /* ---------------- help when there is nothing to get wrong ----------------
+
+     The maze and the tracing game have no discrete wrong answer — you
+     cannot tap the wrong thing, you just stop getting anywhere. Their
+     help ladder therefore hangs off time rather than mistakes: a hint
+     after a stretch with no progress, then a step taken for them after
+     each further stretch. Without this the ladder could never fire in
+     those games at all, and a child who could not find the route had no
+     way out of the level.
+     ------------------------------------------------------------------- */
+
+  /** Begin watching for a child who has stalled. */
+  startIdleHelp(ms = 14000) {
+    this.idleMs = ms;
+    this.noteProgress();
+  }
+
+  /** Call whenever the child advances; restarts the idle clock. */
+  noteProgress() {
+    clearTimeout(this.idleTimer);
+    this.idleTimer = null;
+    if (!this.idleMs || this.solved || this.destroyed) return;
+    this.idleTimer = this.after(this.idleMs, () => {
+      if (this.solved || this.destroyed) return;
+      if (this.hintsUsed === 0) this.giveHint();
+      else this.giveAway();
+      this.noteProgress();
+    });
   }
 
   /** Step 1 of the ladder: pulse the answer. */
