@@ -1,0 +1,183 @@
+/* ============================================================
+   base.css — design tokens + kid-safe global defaults
+   Rules that apply everywhere: big targets, no accidental
+   selection/zoom/scroll, high contrast, reduced-motion respect.
+   ============================================================ */
+
+:root {
+  /* --- Palette. Colourblind-safe: every colour is also paired
+         with a shape or icon in game code, never colour alone. --- */
+  --bg-deep:    #3d2f6b;
+  --bg-mid:     #574399;
+  --bg-soft:    #6f5bbd;
+  --surface:    #fffdf7;
+  --surface-2:  #f3eddf;
+  --ink:        #2a2340;
+  --ink-soft:   #6b6383;
+
+  --joy-red:    #e8503a;
+  --joy-orange: #f28c28;
+  --joy-yellow: #f5c518;
+  --joy-green:  #4caf50;
+  --joy-teal:   #17a2b8;
+  --joy-blue:   #3d7bd6;
+  --joy-purple: #9b59b6;
+  --joy-pink:   #e8629b;
+  --joy-brown:  #8d6e63;
+
+  --ok:    var(--joy-green);
+  --oops:  var(--joy-orange);   /* never red — red reads as punishment */
+  --star:  var(--joy-yellow);
+
+  /* --- Sizing. --touch is the floor for ANY tappable thing.
+         120px on a tablet is roughly a 5-year-old's fingertip
+         plus their aiming error. --- */
+  --touch: 120px;
+  --touch-lg: 160px;
+  --gap: clamp(10px, 1.8vmin, 22px);
+  --radius: 24px;
+  --radius-lg: 36px;
+
+  /* --- Type. Sizes scale with viewport so one layout covers
+         7" through 13" tablets. --- */
+  --font: "Baloo 2", "Nunito", "Segoe UI Rounded", "Comic Sans MS", system-ui, sans-serif;
+  --fs-huge: clamp(32px, 6vmin, 64px);
+  --fs-big:  clamp(24px, 4vmin, 42px);
+  --fs-mid:  clamp(18px, 2.8vmin, 30px);
+  --fs-sm:   clamp(14px, 2vmin, 22px);
+
+  --shadow:    0 6px 0 rgba(0,0,0,.18), 0 10px 24px rgba(0,0,0,.16);
+  --shadow-sm: 0 4px 0 rgba(0,0,0,.15), 0 6px 14px rgba(0,0,0,.12);
+
+  --dur-fast: 140ms;
+  --dur:      260ms;
+  --dur-slow: 520ms;
+  --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;              /* the app never scrolls */
+  overscroll-behavior: none;     /* no pull-to-refresh mid-game */
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--fs-mid);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Nothing in a kid's game should be selectable, draggable,
+   long-press-menu-able, or tap-highlighted. */
+body, #app {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;            /* we handle all gestures ourselves */
+}
+img, svg { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* --- Focus: visible for keyboard/switch-access users, never a
+       stray outline from a touch. --- */
+:focus { outline: none; }
+:focus-visible {
+  outline: 5px solid var(--joy-yellow);
+  outline-offset: 4px;
+}
+
+/* ============================================================
+   Buttons — every tappable control inherits this floor.
+   ============================================================ */
+.btn {
+  min-width: var(--touch);
+  min-height: var(--touch);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4em;
+  padding: .5em .8em;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-mid);
+  font-weight: 800;
+  line-height: 1.1;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-pop),
+              box-shadow var(--dur-fast);
+  touch-action: manipulation;
+}
+.btn:active     { transform: translateY(4px); box-shadow: var(--shadow-sm); }
+.btn[disabled]  { opacity: .45; pointer-events: none; }
+.btn--round     { border-radius: 50%; padding: 0; aspect-ratio: 1; }
+.btn--ghost     { background: rgba(255,255,255,.16); color: #fff; box-shadow: none; }
+.btn--big       { min-width: var(--touch-lg); min-height: var(--touch-lg); font-size: var(--fs-big); }
+
+/* ============================================================
+   Portrait nudge — the game is landscape-only by design.
+   ============================================================ */
+#rotate-hint {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  background: var(--bg-deep);
+  color: #fff;
+  text-align: center;
+}
+#rotate-hint p { margin: 0; font-size: var(--fs-big); font-weight: 800; }
+#rotate-hint .rotate-icon { font-size: 22vmin; animation: rotate-nudge 2.2s var(--ease-pop) infinite; }
+@keyframes rotate-nudge {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  70%, 92%      { transform: rotate(90deg); }
+}
+/* Only nag on genuinely portrait, touch-ish screens — never on a
+   desktop browser window that happens to be tall. */
+@media (orientation: portrait) and (max-width: 1100px) {
+  #rotate-hint { display: flex !important; }
+  #app { visibility: hidden; }
+}
+
+/* ============================================================
+   Motion — some kids are motion-sensitive; some parents turn it
+   off. Kill decorative motion, keep state changes instant.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+body.no-motion *, body.no-motion *::before, body.no-motion *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+
+/* Screen-reader-only helper for the live region announcements. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

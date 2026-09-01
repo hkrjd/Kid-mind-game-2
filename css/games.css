@@ -1,0 +1,198 @@
+/* ============================================================
+   games.css — shared chrome + primitives every engine reuses.
+   Engines should compose these classes rather than inventing
+   their own sizing, so the 120px touch floor holds everywhere.
+   ============================================================ */
+
+.game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: linear-gradient(160deg, var(--bg-soft), var(--bg-mid));
+}
+
+/* ---------- Game top bar: home, prompt, replay-voice ---------- */
+.gamebar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: calc(var(--gap) * .6) var(--gap);
+}
+.gamebar__prompt {
+  flex: 1;
+  margin: 0;
+  color: #fff;
+  font-size: var(--fs-mid);
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(0,0,0,.25);
+}
+.gamebar__stars { display: flex; gap: 4px; font-size: var(--fs-mid); }
+
+/* ---------- Play field ---------- */
+.field {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  padding: var(--gap);
+  position: relative;
+}
+.field--col   { flex-direction: column; }
+.field--wrap  { flex-wrap: wrap; align-content: center; }
+
+/* Auto-fitting grid used by most engines. --cols is set inline. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), 1fr);
+  gap: var(--gap);
+  place-content: center;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ---------- Tile: the universal tappable game object ---------- */
+.tile {
+  position: relative;
+  min-width: var(--touch);
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-size: clamp(38px, 8vmin, 84px);
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-pop),
+              box-shadow var(--dur-fast), opacity var(--dur);
+  touch-action: none;
+}
+.tile:active { transform: translateY(4px) scale(.97); }
+.tile__label {
+  position: absolute; bottom: .25em; left: 0; right: 0;
+  font-size: var(--fs-sm); font-weight: 800; color: var(--ink-soft);
+}
+
+/* State feedback. Correct = green + pop. Wrong = orange wobble,
+   never red, never removal — the tile stays playable. */
+.tile--ok    { background: linear-gradient(180deg, #eafbea, #bff0c2); animation: pop var(--dur) var(--ease-pop); }
+.tile--oops  { animation: wobble var(--dur-slow) ease; }
+.tile--hint  { animation: hint-glow 1s ease infinite; }
+.tile--gone  { opacity: 0; pointer-events: none; transform: scale(.5); }
+.tile--ghost { opacity: .35; }
+.tile--flat  { box-shadow: var(--shadow-sm); }
+
+@keyframes pop     { 0% { transform: scale(1); } 45% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes wobble  { 0%,100% { transform: none; } 20% { transform: translateX(-12px) rotate(-5deg); }
+                     45% { transform: translateX(12px) rotate(5deg); } 70% { transform: translateX(-6px); } }
+@keyframes hint-glow {
+  0%,100% { box-shadow: var(--shadow), 0 0 0 0 rgba(245,197,24,.85); }
+  50%     { box-shadow: var(--shadow), 0 0 0 18px rgba(245,197,24,0); }
+}
+
+/* ---------- Slots / bins / drop targets ---------- */
+.slot {
+  min-width: var(--touch);
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  border: 6px dashed rgba(255,255,255,.55);
+  background: rgba(255,255,255,.14);
+  font-size: clamp(34px, 7vmin, 72px);
+  transition: transform var(--dur-fast) var(--ease-pop), background var(--dur-fast), border-color var(--dur-fast);
+}
+.slot--over { background: rgba(255,255,255,.4); border-color: var(--joy-yellow); transform: scale(1.07); }
+.slot--full { border-style: solid; border-color: transparent; background: var(--surface); box-shadow: var(--shadow-sm); }
+
+.bin {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1em;
+  min-width: var(--touch-lg);
+  min-height: var(--touch-lg);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: clamp(34px, 6.5vmin, 66px);
+  border: 8px solid var(--bin-color, var(--joy-blue));
+  transition: transform var(--dur-fast) var(--ease-pop);
+}
+.bin--over  { transform: scale(1.08); }
+.bin__count { font-size: var(--fs-sm); font-weight: 900; color: var(--ink-soft); }
+
+/* ---------- Dragging ---------- */
+.dragging {
+  position: fixed !important;
+  z-index: 700;
+  pointer-events: none;
+  transform: scale(1.15) rotate(-3deg);
+  box-shadow: 0 18px 30px rgba(0,0,0,.35);
+  transition: none;
+}
+.drag-src { opacity: .25; }
+
+/* ---------- Reward overlay ---------- */
+.reward {
+  position: absolute; inset: 0; z-index: 800;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--gap);
+  background: rgba(20,14,40,.72);
+  animation: screen-in var(--dur) var(--ease-pop);
+}
+.reward__icon  { font-size: clamp(60px, 14vmin, 140px); animation: pop var(--dur-slow) var(--ease-pop); }
+.reward__title { margin: 0; color: #fff; font-size: var(--fs-huge); font-weight: 900; text-shadow: 0 4px 0 rgba(0,0,0,.28); }
+.reward__stars { display: flex; gap: .2em; font-size: clamp(40px, 9vmin, 84px); }
+.reward__star  { animation: star-in var(--dur-slow) var(--ease-pop) backwards; }
+.reward__star:nth-child(2) { animation-delay: .18s; }
+.reward__star:nth-child(3) { animation-delay: .36s; }
+@keyframes star-in { from { opacity: 0; transform: scale(0) rotate(-90deg); } to { opacity: 1; transform: none; } }
+.reward__actions { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
+
+/* ---------- Confetti ---------- */
+.confetti {
+  position: absolute; top: -5vh;
+  width: 1.4vmin; height: 2.4vmin;
+  border-radius: 2px;
+  animation: fall linear forwards;
+  pointer-events: none;
+  z-index: 790;
+}
+@keyframes fall {
+  to { transform: translateY(112vh) rotate(720deg); opacity: .85; }
+}
+
+/* ---------- Canvas games (tracing, maze, coloring) ---------- */
+.canvas-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+.canvas-wrap canvas {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  touch-action: none;
+}
+
+/* ---------- Misc primitives ---------- */
+.card-back {
+  background: linear-gradient(135deg, var(--joy-purple), var(--joy-blue));
+  color: rgba(255,255,255,.9);
+}
+.count-strip { display: flex; flex-wrap: wrap; gap: var(--gap); justify-content: center; align-content: center; max-width: 62%; }
+.count-item  { font-size: clamp(34px, 7vmin, 76px); line-height: 1; animation: pop var(--dur) var(--ease-pop) backwards; }
+.answer-row  { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
+.big-emoji   { font-size: clamp(52px, 12vmin, 130px); line-height: 1; }
