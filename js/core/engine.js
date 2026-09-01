@@ -56,18 +56,24 @@ export class GameEngine {
   mount(host) {
     this.host = host;
 
+    this.field = el('div.field');
+    this.root = el('div.game', {}, this.field);
+    host.appendChild(this.root);
+
+    // Build first. Several prompts describe what the level turned out
+    // to be — which letter to listen for, how many differences there
+    // are, whether the question is "more" or "fewer" — so asking for
+    // the prompt before build() would render it from nothing.
+    this.build(this.field);
+
     const chrome = gameBar({
       prompt: this.prompt(),
       onHome: () => this.ctx.onExit?.(),
       onReplay: () => this.intro(),
     });
     this.setPrompt = chrome.setPrompt;
+    this.root.prepend(chrome.bar);
 
-    this.field = el('div.field');
-    this.root = el('div.game', {}, chrome.bar, this.field);
-    host.appendChild(this.root);
-
-    this.build(this.field);
     // Let the field paint before the voice starts, so the child is
     // looking at the puzzle while it is described.
     this.after(320, () => this.intro());

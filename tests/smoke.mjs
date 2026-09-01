@@ -169,6 +169,14 @@ for (const level of levels) {
       { timeout: 8000 },
     );
 
+    // The prompt is the only instruction a child gets. It must say
+    // something, and must not leak an uninitialised value.
+    const prompt = await page.evaluate(() =>
+      document.querySelector('.gamebar__prompt')?.textContent ?? '');
+    if (!prompt.trim() || /undefined|null|NaN/.test(prompt)) {
+      failures.push({ level: level.id, engine: level.engine, why: `bad prompt: "${prompt}"` });
+    }
+
     if (checkTouch) await auditTouchTargets(level);
 
     // The app must never scroll sideways on any screen.
