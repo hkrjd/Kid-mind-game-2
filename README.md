@@ -182,6 +182,7 @@ node tests/smoke.mjs --engine memory        # one game
 node tests/smoke.mjs --limit 20             # a quick check
 node tests/smoke.mjs --headed               # watch it play
 node tools/check-emoji.mjs                  # no missing glyphs
+node tools/check-subpath.mjs                # works under /<repo>/ on Pages
 ```
 
 `tests/unit.mjs` needs no browser and runs in about a second. It checks the
@@ -214,6 +215,10 @@ checks the title screen and a cached level still work.
 `tools/check-emoji.mjs` renders every emoji in the content packs and fails
 on any missing glyph — the whole artwork budget is emoji, so a tofu box is
 a content bug.
+
+`tools/check-subpath.mjs` serves the app from `/Kid-mind-game-2/` rather than
+the root, the way GitHub Pages serves a project site, and plays a level
+there. Every path in the app is relative, and this is what proves it.
 
 Development helpers:
 
