@@ -121,7 +121,7 @@ No framework, no bundler, no dependencies at runtime.
 
 | | |
 |---|---|
-| **Art** | Emoji and inline SVG. **Zero image files.** |
+| **Art** | Emoji and inline SVG. **No artwork files at all** — the only images in the repo are the app icons, and a script generates those. |
 | **Sound** | Synthesised with the Web Audio API. **Zero audio files.** |
 | **Voice** | The tablet's own `speechSynthesis`, `hi-IN` and `en-IN`. |
 | **Rendering** | DOM and CSS transforms; `<canvas>` only for tracing and the maze. |
@@ -129,7 +129,7 @@ No framework, no bundler, no dependencies at runtime.
 | **Storage** | `localStorage`. |
 | **Offline** | Service worker, installable as a PWA. |
 
-The whole game is a few hundred kilobytes and loads instantly.
+The whole game is about 310 KB and loads instantly.
 
 ```
 index.html            app shell
