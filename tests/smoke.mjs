@@ -11,6 +11,7 @@
      node tests/smoke.mjs --engine memory  # one game
      node tests/smoke.mjs --limit 20       # first N levels
      node tests/smoke.mjs --no-touch       # skip the size audit
+     node tests/smoke.mjs --viewport 800x600   # a small 7-inch tablet
    ============================================================ */
 
 import { chromium } from 'playwright';
@@ -35,6 +36,11 @@ const onlyEngine = flag('engine');
 const limit = Number(flag('limit', 0));
 const checkTouch = !args.includes('--no-touch');
 const headed = args.includes('--headed');
+
+/* Default is a 10-inch tablet in landscape. Pass --viewport to check a
+   smaller one: tiles shrink to fit, and the touch floor must still hold
+   on the smallest screen a child might actually be handed. */
+const [vw, vh] = String(flag('viewport', '1024x768')).split('x').map(Number);
 
 /* ---------------- tiny static server ---------------- */
 
@@ -63,7 +69,7 @@ const browser = await chromium.launch({
   executablePath: '/opt/pw-browsers/chromium',
   headless: !headed,
 });
-const page = await browser.newPage({ viewport: { width: 1024, height: 768 } });
+const page = await browser.newPage({ viewport: { width: vw, height: vh } });
 
 const consoleErrors = [];
 page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
@@ -102,7 +108,7 @@ let levels = await page.evaluate(() => window.__app.allLevels().map((l) => ({
 if (onlyEngine) levels = levels.filter((l) => l.engine === onlyEngine);
 if (limit > 0) levels = levels.slice(0, limit);
 
-console.log(`\nRunning ${levels.length} levels…\n`);
+console.log(`\nRunning ${levels.length} levels at ${vw}x${vh}…\n`);
 
 /* ---------------- per-level run ---------------- */
 
@@ -121,6 +127,12 @@ async function auditTouchTargets(level) {
       const floor = node.closest('.gamebar, .topbar') ? minChrome : min;
       if (r.width < floor - 0.5 || r.height < floor - 0.5) {
         out.push(`${node.className.split(' ')[0]} ${Math.round(r.width)}x${Math.round(r.height)} < ${floor}`);
+      }
+      // Big enough is not sufficient — the body clips overflow, so a
+      // control pushed past the edge is invisible and untappable.
+      if (node.closest('.map__grid, .levels__grid, .settings__body')) continue;  // these scroll
+      if (r.bottom > innerHeight + 1 || r.top < -1 || r.right > innerWidth + 1 || r.left < -1) {
+        out.push(`${node.className.split(' ')[0]} off-screen (top ${Math.round(r.top)}, bottom ${Math.round(r.bottom)} vs ${innerHeight})`);
       }
     }
     return [...new Set(out)];
@@ -147,6 +159,12 @@ for (const level of levels) {
     );
 
     if (checkTouch) await auditTouchTargets(level);
+
+    // The app must never scroll sideways on any screen.
+    if (await page.evaluate(() =>
+      document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)) {
+      failures.push({ level: level.id, engine: level.engine, why: 'page scrolls horizontally' });
+    }
 
     await page.evaluate(() => window.__engine.autoSolve());
     await page.waitForFunction(() => window.__engine?.solved === true, null, { timeout: 12000 });

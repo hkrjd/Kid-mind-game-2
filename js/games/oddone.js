@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { grid, bestCols, tile, delay } from '../core/ui.js';
+import { grid, fitGrid, tile, delay } from '../core/ui.js';
 import { getPack, GENERIC_PACK_IDS } from '../content/packs.js';
 import { itemName } from '../core/i18n.js';
 import { speak } from '../core/audio.js';
@@ -19,8 +19,8 @@ export default class OddOneGame extends GameEngine {
   static skills = ['logic'];
 
   build(field) {
-    const n = COUNT_BY_TIER[this.tier];
-    const { same, odd } = this.pickSet(n);
+    const fit = fitGrid(COUNT_BY_TIER[this.tier]);
+    const { same, odd } = this.pickSet(fit.count);
 
     this.oddItem = odd;
     const all = this.rng.shuffle([...same, odd]);
@@ -32,7 +32,7 @@ export default class OddOneGame extends GameEngine {
     }));
     this.tiles.forEach((node, i) => { node._item = all[i]; });
 
-    field.appendChild(grid(bestCols(all.length), ...this.tiles));
+    field.appendChild(grid(fit, ...this.tiles));
   }
 
   /**

@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { el, tile, grid, bestCols, delay } from '../core/ui.js';
+import { el, tile, grid, fitGrid, delay } from '../core/ui.js';
 import { itemName } from '../core/i18n.js';
 import { speak } from '../core/audio.js';
 
@@ -18,8 +18,9 @@ export default class ShadowGame extends GameEngine {
   static skills = ['attention'];
 
   build(field) {
-    const n = CHOICES_BY_TIER[this.tier];
-    const items = this.rng.sample(this.pack.items, n);
+    // The silhouette sits above the choices and needs its own room.
+    const fit = fitGrid(CHOICES_BY_TIER[this.tier], { reserveY: 170 });
+    const items = this.rng.sample(this.pack.items, fit.count);
     this.answer = this.rng.pick(items);
 
     field.classList.add('field--col');
@@ -45,7 +46,7 @@ export default class ShadowGame extends GameEngine {
       return node;
     });
 
-    field.append(shadow, grid(bestCols(items.length), ...this.tiles));
+    field.append(shadow, grid(fit, ...this.tiles));
   }
 
   tap(node) {

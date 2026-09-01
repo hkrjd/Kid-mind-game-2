@@ -62,6 +62,7 @@ These are enforced everywhere, and the test suite checks the ones it can:
 | **No failure state** | No timer, no lives, no "Game Over", no score that goes down. A wrong tap wobbles and nothing else. |
 | **Nobody gets stuck** | 2 mistakes → the answer starts pulsing. 4 → the game solves that step itself and moves on. |
 | **Adaptive** | Needing help softens the next level of that game; a clean clear firms it back up. |
+| **Fits the actual screen** | Tiles never shrink below the touch floor. On a small 7-inch tablet a level shows fewer items rather than a bottom row the child cannot reach. |
 | **Locked behind a parent gate** | Settings need a three-second hold. |
 | **No ads, purchases, links or tracking** | Nothing leaves the device. |
 
@@ -128,8 +129,8 @@ js/core/              rng, i18n, audio, state, ui, drag, engine, catalog
 js/content/           packs.js (128 items), worlds.js
 js/games/             20 engines, one file each
 js/screens/           hub, map, level select, settings
-tools/                icon generator, screenshot helper
-tests/smoke.mjs       plays all 300 levels
+tools/                icon generator, screenshot and check helpers
+tests/                smoke (plays all 300 levels) and offline checks
 ```
 
 ### Adding a game
@@ -160,21 +161,41 @@ immediately gives new levels to every engine that uses generic packs.
 ## Tests
 
 ```bash
-npm test                              # all 300 levels
-node tests/smoke.mjs --engine memory  # one game
-node tests/smoke.mjs --limit 20       # a quick check
-node tests/smoke.mjs --headed         # watch it play
+npm test                                    # all 300 levels
+node tests/smoke.mjs --engine memory        # one game
+node tests/smoke.mjs --limit 20             # a quick check
+node tests/smoke.mjs --viewport 800x600     # a small 7-inch tablet
+node tests/smoke.mjs --headed               # watch it play
+node tests/offline.mjs                      # works with no network
+node tools/check-emoji.mjs                  # no missing glyphs
 ```
 
-The smoke test opens every level in Chromium, calls that engine's
+`tests/smoke.mjs` opens every level in Chromium, calls that engine's
 `autoSolve()`, and fails unless the level reaches a real win state with a
-clean console. It also measures every tappable element and fails anything
-under the touch floor.
+clean console. On every level it also checks that
 
-Generate the app icons (no image libraries needed):
+- Hindi and English define exactly the same keys,
+- every tappable element meets the 120px touch floor,
+- no control has been pushed off the edge of the screen, and
+- the page never scrolls sideways.
+
+Run it at `--viewport 800x600` as well as the default `1024x768` — the
+small-tablet pass is what catches levels that only fit on a big screen.
+
+`tests/offline.mjs` installs the service worker, cuts the network, and
+checks the title screen and a cached level still work.
+
+`tools/check-emoji.mjs` renders every emoji in the content packs and fails
+on any missing glyph — the whole artwork budget is emoji, so a tofu box is
+a content bug.
+
+Development helpers:
 
 ```bash
-python3 tools/make_icons.py
+python3 tools/make_icons.py                 # regenerate the PWA icons
+node tools/shot.mjs "#/map" out.png         # screenshot a route
+node tools/shot-win.mjs memory-0 out.png    # play a level, capture the reward
+node tools/shot-settings.mjs out.png        # pass the parent gate, capture settings
 ```
 
 ---

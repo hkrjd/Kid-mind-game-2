@@ -8,7 +8,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { el, tile, delay } from '../core/ui.js';
+import { el, tile, delay, fitGrid } from '../core/ui.js';
 import { itemName, t } from '../core/i18n.js';
 import { sfx, speak } from '../core/audio.js';
 
@@ -24,8 +24,13 @@ export default class SpotDiffGame extends GameEngine {
   static skills = ['attention'];
 
   build(field) {
-    const [cols, rows, diffs] = SETUP_BY_TIER[this.tier];
-    const cells = cols * rows;
+    const [wantCols, wantRows, wantDiffs] = SETUP_BY_TIER[this.tier];
+    // Two panels sit side by side, so each gets about 42% of the width.
+    const fit = fitGrid(wantCols * wantRows, { widthFraction: 0.42 });
+    const cols = fit.cols;
+    const rows = fit.rows;
+    const cells = fit.count;
+    const diffs = Math.max(1, Math.min(wantDiffs, cells - 1));
 
     const items = this.rng.sample(this.pack.items, Math.min(this.pack.items.length, cells + diffs + 2));
     const base = Array.from({ length: cells }, (_, i) => items[i % items.length]);
@@ -44,6 +49,7 @@ export default class SpotDiffGame extends GameEngine {
     this.found = new Set();
     this.totalDiffs = changed.length;
 
+    this.tileSize = fit.tile;
     this.left = this.panel(base, cols, rows, 'L');
     this.right = this.panel(right, cols, rows, 'R');
 
@@ -69,7 +75,7 @@ export default class SpotDiffGame extends GameEngine {
       style: {
         '--cols': String(cols),
         '--rows': String(rows),
-        '--tile': `min(calc(40vw / ${cols}), calc(58vh / ${rows}), 150px)`,
+        '--tile': `${this.tileSize}px`,
       },
     }, ...tiles);
 

@@ -229,13 +229,17 @@ export function parentGate() {
    ------------------------------------------------------------ */
 
 /**
- * A grid of tiles. Both --cols and --rows are published so the
- * stylesheet can size tiles to the largest square that fits.
+ * A grid of tiles. Pass either a column count (the stylesheet then
+ * solves for tile size) or a whole fitGrid() result, which pins the
+ * exact size that was proven to fit.
  */
-export function grid(cols, ...children) {
+export function grid(spec, ...children) {
   const items = children.flat().filter(Boolean);
+  const cols = typeof spec === 'number' ? spec : spec.cols;
   const rows = Math.max(1, Math.ceil(items.length / cols));
-  return el('div.grid', { style: { '--cols': String(cols), '--rows': String(rows) } }, ...items);
+  const style = { '--cols': String(cols), '--rows': String(rows) };
+  if (typeof spec === 'object' && spec.tile) style['--tile'] = `${spec.tile}px`;
+  return el('div.grid', { style }, ...items);
 }
 
 /**
@@ -251,6 +255,51 @@ export function bestCols(n) {
   if (n <= 12) return 4;
   if (n <= 16) return 4;
   return 5;
+}
+
+/** How many rows and columns of `min`px tiles the play field holds. */
+function gridLimits(min, widthFraction, reserveY) {
+  const gap = 16;      // a little over the real gap, so this errs safe
+  const chrome = 160;  // game bar plus field padding
+  const availW = Math.max(min, window.innerWidth * widthFraction - 2 * gap);
+  const availH = Math.max(min, window.innerHeight - chrome - reserveY);
+  return {
+    gap,
+    availW,
+    availH,
+    maxCols: Math.max(1, Math.floor((availW + gap) / (min + gap))),
+    maxRows: Math.max(1, Math.floor((availH + gap) / (min + gap))),
+  };
+}
+
+/**
+ * Fit `want` tiles onto THIS screen without any of them shrinking
+ * below the touch floor or falling off the bottom edge.
+ *
+ * On a 10-inch tablet you get everything you asked for. On a small
+ * 7-inch one the returned `count` is lower — the level genuinely has
+ * fewer items rather than a row the child cannot reach. Engines must
+ * trim their content to `count` and hand the whole result to grid(),
+ * which uses the computed `tile` size directly.
+ *
+ * `reserveY` is vertical space the engine spends on something else in
+ * the same field (a target picture above the grid, say).
+ */
+export function fitGrid(want, { min = 120, max = 240, widthFraction = 1, reserveY = 0 } = {}) {
+  const { gap, availW, availH, maxCols, maxRows } = gridLimits(min, widthFraction, reserveY);
+  const count = Math.max(1, Math.min(want, maxCols * maxRows));
+
+  let cols = Math.min(bestCols(count), maxCols, count);
+  while (Math.ceil(count / cols) > maxRows && cols < maxCols) cols++;
+  const rows = Math.ceil(count / cols);
+
+  const tile = Math.max(min, Math.min(
+    max,
+    Math.floor((availW - (cols - 1) * gap) / cols),
+    Math.floor((availH - (rows - 1) * gap) / rows),
+  ));
+
+  return { cols, rows, count, tile };
 }
 
 /** A tile showing one emoji, optionally captioned. */

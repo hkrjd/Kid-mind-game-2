@@ -6,7 +6,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { el, tile, grid, bestCols, delay } from '../core/ui.js';
+import { el, tile, grid, fitGrid, delay } from '../core/ui.js';
 import { itemName, t } from '../core/i18n.js';
 import { speak } from '../core/audio.js';
 
@@ -17,7 +17,11 @@ export default class FindHiddenGame extends GameEngine {
   static skills = ['attention'];
 
   build(field) {
-    const n = COUNT_BY_TIER[this.tier];
+    // Ask for the tier's count, but take only what fits this screen:
+    // a tile pushed off the bottom edge is one a child cannot tap.
+    // The target picture sits above the grid and needs its own room.
+    const fit = fitGrid(COUNT_BY_TIER[this.tier], { reserveY: 170 });
+    const n = fit.count;
     const [target, ...rest] = this.rng.sample(this.pack.items, Math.min(this.pack.items.length, 4));
     this.target = target;
 
@@ -44,7 +48,7 @@ export default class FindHiddenGame extends GameEngine {
       return node;
     });
 
-    field.append(wanted, grid(bestCols(all.length), ...this.tiles));
+    field.append(wanted, grid(fit, ...this.tiles));
   }
 
   prompt() {

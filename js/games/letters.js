@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { tile, grid, bestCols, delay } from '../core/ui.js';
+import { tile, grid, fitGrid, delay } from '../core/ui.js';
 import { LETTERS, EASY_LETTERS } from '../content/packs.js';
 import { getLang, t } from '../core/i18n.js';
 import { speak } from '../core/audio.js';
@@ -23,9 +23,9 @@ export default class LettersGame extends GameEngine {
     // Start with the first ten letters, which are the ones a child
     // meets first in both scripts, before opening the full set.
     const pool = this.tier === 0 ? EASY_LETTERS[lang] : LETTERS[lang];
-    const n = Math.min(CHOICES_BY_TIER[this.tier], pool.length);
+    const fit = fitGrid(Math.min(CHOICES_BY_TIER[this.tier], pool.length));
 
-    const choices = this.rng.sample(pool, n);
+    const choices = this.rng.sample(pool, fit.count);
     this.answer = this.rng.pick(choices);
 
     this.tiles = choices.map((letter) => {
@@ -38,7 +38,7 @@ export default class LettersGame extends GameEngine {
       return node;
     });
 
-    field.appendChild(grid(bestCols(this.tiles.length), ...this.tiles));
+    field.appendChild(grid(fit, ...this.tiles));
   }
 
   prompt() {

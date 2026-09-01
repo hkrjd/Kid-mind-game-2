@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { grid, bestCols, delay } from '../core/ui.js';
+import { grid, fitGrid, delay } from '../core/ui.js';
 import { el } from '../core/ui.js';
 import { sfx, speak } from '../core/audio.js';
 import { itemName } from '../core/i18n.js';
@@ -19,7 +19,11 @@ export default class MemoryGame extends GameEngine {
   static skills = ['memory'];
 
   build(field) {
-    const pairs = PAIRS_BY_TIER[this.tier];
+    // Cards come in pairs, so fit the deck and then round down to a
+    // whole number of pairs.
+    const wanted = PAIRS_BY_TIER[this.tier] * 2;
+    const pairs = Math.max(2, Math.floor(fitGrid(wanted).count / 2));
+    const fit = fitGrid(pairs * 2);
     const items = this.rng.sample(this.pack.items, pairs);
     const deck = this.rng.shuffle([...items, ...items]);
 
@@ -39,7 +43,7 @@ export default class MemoryGame extends GameEngine {
       return card;
     });
 
-    field.appendChild(grid(bestCols(deck.length), ...this.cards));
+    field.appendChild(grid(fit, ...this.cards));
   }
 
   face(card, up) {
