@@ -1,10 +1,18 @@
 /* ============================================================
    sw.js — offline cache so the game works on a tablet with no
-   internet. Cache-first: this app is fully static and every
-   release bumps CACHE, so stale content is never a risk.
+   internet.
+
+   Stale-while-revalidate, not cache-first. Cache-first served the
+   cached copy and stopped there, so once a tablet had the game it
+   never saw another version: the browser only reinstalls a service
+   worker whose own bytes changed, and shipping a fix to a game file
+   does not change sw.js. Now every request is answered from the
+   cache immediately AND refetched in the background, so a fix
+   reaches a returning player on their next visit while the app
+   still opens instantly and still works with no network at all.
    ============================================================ */
 
-const CACHE = 'dimaag-ka-khel-v1';
+const CACHE = 'dimaag-ka-khel-v2';
 
 const SHELL = [
   './',
@@ -60,22 +68,35 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  e.respondWith(
-    caches.match(request).then((hit) => {
-      if (hit) return hit;
-      return fetch(request).then((res) => {
-        // Cache each game engine the first time it is loaded, so a
-        // level played once is playable offline forever after.
-        if (res.ok && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
-        }
+  e.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(request);
+
+    const fresh = fetch(request)
+      .then((res) => {
+        // Cache each game engine the first time it is loaded, and
+        // refresh anything already cached, so the next visit is current.
+        if (res.ok && res.type === 'basic') cache.put(request, res.clone());
         return res;
-      }).catch(() =>
-        // Offline and uncached: for a navigation, fall back to the
-        // app shell so the SPA router can still boot.
-        request.mode === 'navigate' ? caches.match('./index.html') : Response.error()
-      );
-    })
-  );
+      })
+      .catch(() => null);
+
+    // Answer from the cache at once, but let the refetch finish so the
+    // stored copy is up to date for next time.
+    if (cached) {
+      e.waitUntil(fresh);
+      return cached;
+    }
+
+    const res = await fresh;
+    if (res) return res;
+
+    // Offline and never cached: for a navigation, fall back to the app
+    // shell so the router can still boot.
+    if (request.mode === 'navigate') {
+      const shell = await cache.match('./index.html');
+      if (shell) return shell;
+    }
+    return Response.error();
+  })());
 });

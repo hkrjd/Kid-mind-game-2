@@ -6,7 +6,7 @@
    engines themselves load lazily when a level is actually opened.
    ============================================================ */
 
-import { WORLDS, ENGINES, LEVELS_PER_WORLD, TOTAL_LEVELS, UNLOCK_RATIO } from '../content/worlds.js';
+import { WORLDS, ENGINES, LEVELS_PER_WORLD, TOTAL_LEVELS } from '../content/worlds.js';
 import { Rng } from './rng.js';
 import { isDone, starsFor } from './state.js';
 
@@ -92,19 +92,23 @@ export function worldProgress(worldIndex) {
   return { done, total: list.length, stars, maxStars: list.length * 3 };
 }
 
-/** World 0 is always open; later worlds need the previous one 60% done. */
-export function isWorldUnlocked(worldIndex) {
-  if (worldIndex <= 0) return true;
-  const prev = worldProgress(worldIndex - 1);
-  return prev.done >= Math.ceil(prev.total * UNLOCK_RATIO);
+/**
+ * Every category is open from the start. Gating them behind progress in
+ * the previous one meant a child who loved the maze had to clear
+ * eighteen memory levels to reach it, and a parent opening the app saw
+ * nine padlocks and one game.
+ */
+export function isWorldUnlocked() {
+  return true;
 }
 
 /**
- * Levels unlock one at a time inside a world, so a child always has
- * exactly one obvious "next" button to press.
+ * Levels still unlock one at a time inside a category, because the
+ * thirty levels there climb from the easiest tier to the hardest — so
+ * a child always has exactly one obvious "next" button, at a
+ * difficulty they have been led up to.
  */
 export function isLevelUnlocked(level) {
-  if (!isWorldUnlocked(level.world)) return false;
   if (level.indexInWorld === 0) return true;
   const prev = levelsInWorld(level.world)[level.indexInWorld - 1];
   return isDone(prev.id);

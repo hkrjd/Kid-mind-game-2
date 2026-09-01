@@ -65,10 +65,3 @@ export const WORLDS = [
 
 export const LEVELS_PER_WORLD = LEVELS_PER_ENGINE * 2;   // 30
 export const TOTAL_LEVELS = WORLDS.length * LEVELS_PER_WORLD;  // 300
-
-/**
- * A world unlocks when the previous one is 60% cleared. Not 100%:
- * a child who finds one game hard should never be walled off from
- * everything else.
- */
-export const UNLOCK_RATIO = 0.6;

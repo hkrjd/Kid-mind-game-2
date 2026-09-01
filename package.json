@@ -15,6 +15,7 @@
     "test:levels": "node tests/smoke.mjs",
     "test:small": "node tests/smoke.mjs --viewport 800x600",
     "test:offline": "node tests/offline.mjs",
-    "serve": "python3 -m http.server 8000"
+    "serve": "python3 -m http.server 8000",
+    "test:update": "node tests/update.mjs"
   }
 }

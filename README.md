@@ -131,7 +131,7 @@ No framework, no bundler, no dependencies at runtime.
 | **Rendering** | DOM and CSS transforms; `<canvas>` only for tracing and the maze. |
 | **Input** | Pointer Events, so touch and mouse take one code path. |
 | **Storage** | `localStorage`. |
-| **Offline** | Service worker, installable as a PWA. |
+| **Offline** | Service worker, installable as a PWA. Stale-while-revalidate, so it opens instantly, works with no network, and still picks up a deployed fix. |
 
 The whole game is about 310 KB and loads instantly.
 
@@ -183,6 +183,7 @@ npm run test:small       # all 300 levels on a 7-inch tablet
 npm run test:audit       # are the puzzles well posed, and is help reachable?
 npm run test:audit:en    # the same, over the English content
 npm run test:offline     # still works with no network
+npm run test:update      # a deployed fix reaches a tablet that already has it
 
 node tests/smoke.mjs --engine memory        # one game
 node tests/smoke.mjs --limit 20             # a quick check
@@ -233,6 +234,14 @@ tapping, and the game is expected to rescue the child on a timer.
 
 `tests/offline.mjs` installs the service worker, cuts the network, and
 checks the title screen and a cached level still work.
+
+`tests/update.mjs` covers the opposite risk, and the one that is easy to
+miss: a browser only reinstalls a service worker whose own bytes changed,
+so under a cache-first strategy a tablet that had loaded the game once
+would serve that copy forever and never see another fix. The test installs
+against one build, changes what the server returns without touching
+`sw.js`, and fails unless a returning visitor lands on the new build —
+while still working with the network cut.
 
 `tools/check-emoji.mjs` renders every emoji in the content packs and fails
 on any missing glyph — the whole artwork budget is emoji, so a tofu box is

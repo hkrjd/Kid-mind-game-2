@@ -89,8 +89,9 @@ group('catalog', () => {
     return true;
   })());
 
-  ok('the first world is open', catalog.isWorldUnlocked(0));
-  ok('later worlds start locked', !catalog.isWorldUnlocked(1));
+  ok('every category is open from the start',
+    worlds.WORLDS.every((_, i) => catalog.isWorldUnlocked(i)),
+    'a category is gated behind another');
   ok('the first level of world 0 is playable', !!levels[0] && catalog.isLevelUnlocked(levels[0]));
   ok('the second is not, until the first is cleared', !!levels[1] && !catalog.isLevelUnlocked(levels[1]));
   ok('nextLevel walks the catalog',

@@ -24,8 +24,6 @@ const DEFAULTS = {
    * to soften the next level, so a child never hits a wall.
    */
   struggle: {},
-  /** Highest world index unlocked (0-based). */
-  world: 0,
 };
 
 let data = { ...DEFAULTS };
@@ -117,20 +115,8 @@ export function noteStruggle(engineId, delta) {
   return next;
 }
 
-/* ---------------- world unlocking ---------------- */
-
-export function unlockWorld(idx) {
-  if (idx > data.world) {
-    data.world = idx;
-    save();
-    return true;
-  }
-  return false;
-}
-
 export function resetProgress() {
   data.stars = {};
   data.struggle = {};
-  data.world = 0;
   save();
 }

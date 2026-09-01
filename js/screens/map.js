@@ -8,24 +8,23 @@
 import { el, topBar } from '../core/ui.js';
 import { t } from '../core/i18n.js';
 import { WORLDS } from '../content/worlds.js';
-import { worldProgress, isWorldUnlocked } from '../core/catalog.js';
-import { sfx, speak } from '../core/audio.js';
+import { worldProgress } from '../core/catalog.js';
+import { sfx } from '../core/audio.js';
 
 export function mapScreen({ go }) {
   const grid = el('div.map__grid');
 
+  // Every category is open, so none of these cards can be locked.
   WORLDS.forEach((world, i) => {
-    const unlocked = isWorldUnlocked(i);
     const { done, total, stars } = worldProgress(i);
     const name = t(world.nameKey);
 
-    const card = el(`div.world${unlocked ? '' : '.world--locked'}`, {
+    const card = el('div.world', {
       role: 'button',
-      tabindex: unlocked ? 0 : -1,
+      tabindex: 0,
       'aria-label': `${name} — ${done}/${total}`,
       style: { borderBottom: `10px solid ${world.color}` },
       onclick: () => {
-        if (!unlocked) { sfx('oops'); speak(t('app.locked')); return; }
         sfx('tap');
         go(`#/world/${i}`);
       },

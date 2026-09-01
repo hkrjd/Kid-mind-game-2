@@ -11,11 +11,11 @@
      #/settings    parent-gated settings
    ============================================================ */
 
-import { load as loadState, getSetting, recordStars, unlockWorld, resetProgress } from './core/state.js';
-import { unlock as unlockAudio, sfx } from './core/audio.js';
+import { load as loadState, getSetting, recordStars, resetProgress } from './core/state.js';
+import { unlock as unlockAudio } from './core/audio.js';
 import { t } from './core/i18n.js';
 import { el } from './core/ui.js';
-import { allLevels, getLevel, nextLevel, rngFor, isWorldUnlocked, worldProgress } from './core/catalog.js';
+import { allLevels, getLevel, nextLevel, rngFor, worldProgress } from './core/catalog.js';
 import { WORLDS, ENGINES } from './content/worlds.js';
 import { getPack, PAIR_SETS } from './content/packs.js';
 import { effectiveTier } from './core/engine.js';
@@ -101,13 +101,7 @@ async function playLevel(id) {
     onExit: () => go(`#/world/${level.world}`),
     onAgain: () => playLevel(id),
     onNext: () => (nxt ? playLevel(nxt.id) : go(`#/world/${level.world}`)),
-    onWin: (stars) => {
-      recordStars(level.id, stars);
-      // Opening the next world here (rather than on the map) means the
-      // unlock animation happens while the child is still celebrating.
-      const nw = level.world + 1;
-      if (nw < WORLDS.length && isWorldUnlocked(nw) && unlockWorld(nw)) sfx('unlock');
-    },
+    onWin: (stars) => recordStars(level.id, stars),
   });
 
   clearScreen();
