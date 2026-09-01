@@ -10,6 +10,17 @@ import { t } from './i18n.js';
 import { sfx } from './audio.js';
 import { getSetting } from './state.js';
 
+/**
+ * Apply a style object. Custom properties (--cols, --bin-color…)
+ * need setProperty; Object.assign silently drops them.
+ */
+function setStyle(node, styles) {
+  for (const [k, v] of Object.entries(styles)) {
+    if (k.startsWith('--')) node.style.setProperty(k, String(v));
+    else node.style[k] = v;
+  }
+}
+
 /** Terse element factory: el('div.tile', {…}, children). */
 export function el(spec, props = {}, ...children) {
   const [tagPart, ...classes] = String(spec).split('.');
@@ -19,7 +30,7 @@ export function el(spec, props = {}, ...children) {
   for (const [k, v] of Object.entries(props)) {
     if (v == null || v === false) continue;
     if (k === 'class') node.className += ` ${v}`;
-    else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v);
+    else if (k === 'style' && typeof v === 'object') setStyle(node, v);
     else if (k === 'dataset') Object.assign(node.dataset, v);
     else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2).toLowerCase(), v);
     else if (k === 'text') node.textContent = v;
@@ -220,9 +231,14 @@ export function parentGate() {
    Layout helpers
    ------------------------------------------------------------ */
 
-/** A grid whose column count engines set explicitly. */
+/**
+ * A grid of tiles. Both --cols and --rows are published so the
+ * stylesheet can size tiles to the largest square that fits.
+ */
 export function grid(cols, ...children) {
-  return el('div.grid', { style: { '--cols': String(cols) } }, ...children);
+  const items = children.flat().filter(Boolean);
+  const rows = Math.max(1, Math.ceil(items.length / cols));
+  return el('div.grid', { style: { '--cols': String(cols), '--rows': String(rows) } }, ...items);
 }
 
 /**

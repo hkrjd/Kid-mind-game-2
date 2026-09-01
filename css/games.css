@@ -42,13 +42,23 @@
   padding: var(--gap);
   position: relative;
 }
-.field--col   { flex-direction: column; }
+.field--col   { flex-direction: column; justify-content: space-evenly; }
 .field--wrap  { flex-wrap: wrap; align-content: center; }
 
-/* Auto-fitting grid used by most engines. --cols is set inline. */
+/* Grid used by most engines. --cols and --rows are set inline by
+   ui.grid(), which lets --tile solve for the largest square that
+   still fits both across and down. Bigger tiles are strictly better
+   for a 5-year-old, so we fill the screen rather than centring
+   minimum-size tiles in a sea of background. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 4), 1fr);
+  --tile: min(
+    calc((92vw - (var(--cols, 4) - 1) * var(--gap)) / var(--cols, 4)),
+    calc((74vh - (var(--rows, 2) - 1) * var(--gap)) / var(--rows, 2)),
+    240px
+  );
+  grid-template-columns: repeat(var(--cols, 4), var(--tile));
+  grid-auto-rows: var(--tile);
   gap: var(--gap);
   place-content: center;
   max-width: 100%;
@@ -60,6 +70,8 @@
   position: relative;
   min-width: var(--touch);
   min-height: var(--touch);
+  width: var(--tile, clamp(var(--touch), 21vmin, 200px));
+  height: var(--tile, clamp(var(--touch), 21vmin, 200px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -118,6 +130,8 @@
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .1em;
   min-width: var(--touch-lg);
   min-height: var(--touch-lg);
+  width: clamp(var(--touch-lg), 24vmin, 220px);
+  height: clamp(var(--touch-lg), 24vmin, 220px);
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow);
@@ -154,7 +168,7 @@
 .reward__star:nth-child(2) { animation-delay: .18s; }
 .reward__star:nth-child(3) { animation-delay: .36s; }
 @keyframes star-in { from { opacity: 0; transform: scale(0) rotate(-90deg); } to { opacity: 1; transform: none; } }
-.reward__actions { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
+.reward__actions { display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
 
 /* ---------- Confetti ---------- */
 .confetti {
@@ -192,7 +206,25 @@
   background: linear-gradient(135deg, var(--joy-purple), var(--joy-blue));
   color: rgba(255,255,255,.9);
 }
-.count-strip { display: flex; flex-wrap: wrap; gap: var(--gap); justify-content: center; align-content: center; max-width: 62%; }
-.count-item  { font-size: clamp(34px, 7vmin, 76px); line-height: 1; animation: pop var(--dur) var(--ease-pop) backwards; }
+/* Countable items are tappable — a child counts by touching each
+   one — so they carry the same touch floor as any other control. */
+.count-strip {
+  display: flex; flex-wrap: wrap;
+  gap: calc(var(--gap) * .5);
+  justify-content: center; align-content: center;
+  max-width: 86%;
+}
+.count-item {
+  min-width: var(--touch);
+  min-height: var(--touch);
+  display: grid; place-items: center;
+  border-radius: var(--radius);
+  font-size: clamp(44px, 11vmin, 96px);
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity var(--dur), transform var(--dur-fast) var(--ease-pop);
+  animation: pop var(--dur) var(--ease-pop) backwards;
+}
+.count-item:active { transform: scale(.92); }
 .answer-row  { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
 .big-emoji   { font-size: clamp(52px, 12vmin, 130px); line-height: 1; }

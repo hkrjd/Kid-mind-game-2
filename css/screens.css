@@ -55,7 +55,7 @@
   text-shadow: 0 5px 0 rgba(0,0,0,.25);
 }
 .hub__sub { margin: 0; color: rgba(255,255,255,.85); font-size: var(--fs-sm); font-weight: 700; }
-.hub__actions { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
+.hub__actions { display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
 .hub__play {
   background: linear-gradient(180deg, var(--joy-yellow), var(--joy-orange));
   color: var(--ink);
