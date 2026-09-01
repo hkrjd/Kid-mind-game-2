@@ -7,8 +7,18 @@ five-year-old, playable on any tablet. Hindi and English, spoken aloud, works
 offline, no ads, no purchases, no data collection.
 
 <p align="center">
-  <img src="tests/screenshots/hub.png" width="420" alt="Title screen">
-  <img src="tests/screenshots/map.png" width="420" alt="World map">
+  <img src="docs/hub.png" width="410" alt="Title screen">
+  <img src="docs/map.png" width="410" alt="World map: ten worlds, the first unlocked">
+</p>
+<p align="center">
+  <img src="docs/memory.png" width="204" alt="Memory match">
+  <img src="docs/counting.png" width="204" alt="Counting">
+  <img src="docs/sorting.png" width="204" alt="Sorting into bins">
+  <img src="docs/maze.png" width="204" alt="Maze">
+</p>
+<p align="center">
+  <img src="docs/jigsaw.png" width="410" alt="Jigsaw built from one emoji">
+  <img src="docs/letters.png" width="410" alt="Letter recognition in English">
 </p>
 
 ---
@@ -130,6 +140,7 @@ js/content/           packs.js (128 items), worlds.js
 js/games/             20 engines, one file each
 js/screens/           hub, map, level select, settings
 tools/                icon generator, screenshot and check helpers
+docs/                 the screenshots this README links to
 tests/                smoke (plays all 300 levels) and offline checks
 ```
 

@@ -41,28 +41,21 @@ export default class JigsawGame extends GameEngine {
   static skills = ['shapes'];
 
   build(field) {
-    const fit = layout(SPLIT_BY_TIER[this.tier]);
-    const n = fit.n;
-    const piece = fit.piece;
+    const { n, piece, board } = layout(SPLIT_BY_TIER[this.tier]);
     this.item = this.rng.pick(this.pack.items);
-    this.cols = n;
-    this.rows = n;
-    this.board = fit.board;
-
-    const cols = n;
-    const rows = n;
-    const pw = piece;
-    const ph = piece;
-    this.remaining = cols * rows;
+    this.n = n;
+    this.piece = piece;
+    this.board = board;
+    this.remaining = n * n;
     this.selected = null;
 
     /* --- the board: empty slots in picture order --- */
     this.slots = [];
-    const board = el('div', {
+    const boardEl = el('div', {
       style: {
         display: 'grid',
-        gridTemplateColumns: `repeat(${cols}, ${pw}px)`,
-        gridAutoRows: `${ph}px`,
+        gridTemplateColumns: `repeat(${n}, ${piece}px)`,
+        gridAutoRows: `${piece}px`,
         gap: '3px',
         padding: '10px',
         borderRadius: 'var(--radius-lg)',
@@ -70,14 +63,14 @@ export default class JigsawGame extends GameEngine {
       },
     });
 
-    for (let i = 0; i < cols * rows; i++) {
+    for (let i = 0; i < n * n; i++) {
       const slot = el('div.slot', {
         style: { minWidth: 0, minHeight: 0, borderWidth: '4px', borderRadius: '10px' },
         onclick: () => this.tapSlot(slot),
       });
       slot._index = i;
       this.slots.push(slot);
-      board.appendChild(slot);
+      boardEl.appendChild(slot);
     }
 
     /* --- the loose pieces --- */
@@ -86,7 +79,7 @@ export default class JigsawGame extends GameEngine {
         type: 'button',
         'aria-label': `${itemName(this.item)} ${index + 1}`,
         style: {
-          width: `${pw}px`, height: `${ph}px`,
+          width: `${piece}px`, height: `${piece}px`,
           minWidth: 0, minHeight: 0,
           padding: 0, border: 'none',
           borderRadius: '10px',
@@ -95,7 +88,7 @@ export default class JigsawGame extends GameEngine {
           cursor: 'pointer',
         },
         onclick: () => this.tapPiece(node),
-      }, this.window(index, pw, ph));
+      }, this.window(index));
       node._index = index;
 
       this.cleanup(makeDraggable(node, {
@@ -129,7 +122,7 @@ export default class JigsawGame extends GameEngine {
       : el('div', { style: { fontSize: `${Math.round(this.board * 0.16)}px`, lineHeight: 1, opacity: '.5' } }, '❓');
 
     field.append(
-      board,
+      boardEl,
       el('div', {
         style: {
           display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -143,9 +136,9 @@ export default class JigsawGame extends GameEngine {
    * One tile of the picture: a clipping window holding the whole
    * emoji, shifted so the requested cell shows through.
    */
-  window(index, pw, ph) {
-    const c = index % this.cols;
-    const r = Math.floor(index / this.cols);
+  window(index) {
+    const c = index % this.n;
+    const r = Math.floor(index / this.n);
     return el('div', {
       style: {
         width: '100%', height: '100%',
@@ -155,8 +148,8 @@ export default class JigsawGame extends GameEngine {
     }, el('span', {
       style: {
         position: 'absolute',
-        left: `${-c * pw}px`,
-        top: `${-r * ph}px`,
+        left: `${-c * this.piece}px`,
+        top: `${-r * this.piece}px`,
         width: `${this.board}px`, height: `${this.board}px`,
         fontSize: `${this.board * 0.86}px`,
         lineHeight: `${this.board}px`,
@@ -193,8 +186,7 @@ export default class JigsawGame extends GameEngine {
     node.dataset.dragDisabled = 'true';
     node.style.visibility = 'hidden';
 
-    const side = this.board / this.cols;
-    slot.replaceChildren(this.window(slot._index, side, side));
+    slot.replaceChildren(this.window(slot._index));
     slot.classList.add('slot--full');
     slot.style.background = 'transparent';
     sfx('match');
