@@ -102,6 +102,49 @@ if (i18nGaps.missingInHi.length || i18nGaps.missingInEn.length) {
 }
 console.log('i18n key parity: ok');
 
+/* The path a child actually walks: title -> categories -> levels -> game.
+   Each step has to lead to the next, or the games are unreachable however
+   well they play on their own. */
+{
+  const steps = [];
+  const step = async (what, act, count) => {
+    try {
+      await act();
+      steps.push([what, await count()]);
+    } catch (err) {
+      steps.push([what, 0, err.message.split('\n')[0]]);
+    }
+  };
+
+  await page.evaluate(() => window.__app.go('#/'));
+  await page.waitForSelector('.hub__play', { timeout: 5000 }).catch(() => {});
+
+  await step('title -> categories',
+    async () => { await page.click('.hub__play'); await page.waitForSelector('.world', { timeout: 5000 }); },
+    () => page.locator('.world').count());
+
+  await step('a category -> its levels',
+    async () => { await page.click('.world >> nth=0'); await page.waitForSelector('.lvl', { timeout: 5000 }); },
+    () => page.locator('.lvl').count());
+
+  await step('a level -> the game',
+    async () => { await page.click('.lvl >> nth=0'); await page.waitForFunction(() => !!window.__engine, null, { timeout: 8000 }); },
+    async () => (await page.evaluate(() => (window.__engine ? 1 : 0))));
+
+  await page.evaluate(() => window.__app.go('#/'));
+  await page.waitForTimeout(200);
+
+  const broken = steps.filter(([, n]) => !n);
+  if (broken.length) {
+    console.error('\nNAVIGATION FAILED — the games cannot be reached');
+    for (const [what, , why] of broken) console.error(`  ${what}: nothing appeared${why ? ` (${why})` : ''}`);
+    await browser.close();
+    server.close();
+    process.exit(1);
+  }
+  console.log(`navigation: ${steps.map(([what, n]) => `${what} (${n})`).join(', ')}`);
+}
+
 let levels = await page.evaluate(() => window.__app.allLevels().map((l) => ({
   id: l.id, engine: l.engine, number: l.number, tier: l.tier, packId: l.packId,
 })));
@@ -164,7 +207,7 @@ for (const level of levels) {
       // hardest tiers would never actually be tested.
       window.__app.resetProgress();
       window.__engine = null;
-      window.location.hash = `#/level/${id}`;
+      window.__app.go(`#/level/${id}`);
     }, level.id);
 
     // Wait for the engine to mount and build its field.

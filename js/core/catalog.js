@@ -110,10 +110,4 @@ export function isLevelUnlocked(level) {
   return isDone(prev.id);
 }
 
-/** The level the big Play button should jump to. */
-export function firstUnplayedLevel() {
-  const list = buildCatalog();
-  return list.find((l) => !isDone(l.id) && isLevelUnlocked(l)) || list[0];
-}
-
 export { TOTAL_LEVELS, WORLDS };

@@ -1,19 +1,19 @@
 /* ============================================================
    hub.js — the title screen.
 
-   One giant Play button that resumes exactly where the child left
-   off, so a 5-year-old can start alone without reading anything.
+   One giant Play button that opens the list of game categories.
+   Sending the child straight into the next level skipped that list
+   entirely, and a parent looking for "what games are in here?"
+   could not find it behind a small map icon.
    ============================================================ */
 
 import { el, button, iconButton } from '../core/ui.js';
 import { t } from '../core/i18n.js';
 import { totalStars, completedCount } from '../core/state.js';
-import { firstUnplayedLevel, TOTAL_LEVELS } from '../core/catalog.js';
+import { TOTAL_LEVELS } from '../core/catalog.js';
 import { speak } from '../core/audio.js';
 
 export function hubScreen({ go }) {
-  const next = firstUnplayedLevel();
-
   const screen = el('div.screen.hub', {},
     el('div.hub__logo', { text: '🧠' }),
     el('h1.hub__title', { text: t('app.title') }),
@@ -24,8 +24,7 @@ export function hubScreen({ go }) {
         `  ·  ${completedCount()}/${TOTAL_LEVELS}`)),
 
     el('div.hub__actions', {},
-      button(`▶ ${t('app.play')}`, () => go(`#/level/${next.id}`), { cls: 'hub__play' }),
-      iconButton('🗺️', () => go('#/map'), t('app.back'), 'btn--ghost'),
+      button(`▶ ${t('app.play')}`, () => go('#/map'), { cls: 'hub__play' }),
       iconButton('⚙️', () => go('#/settings'), t('app.settings'), 'btn--ghost')));
 
   // Greet on arrival so a child who cannot read still knows what to do.
