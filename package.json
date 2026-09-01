@@ -1,5 +1,14 @@
 {
   "devDependencies": {
     "playwright": "^1.49.1"
+  },
+  "type": "module",
+  "name": "dimaag-ka-khel",
+  "version": "1.0.0",
+  "description": "Tablet mind games for 5-year-olds, Hindi and English",
+  "private": true,
+  "scripts": {
+    "test": "node tests/smoke.mjs",
+    "serve": "python3 -m http.server 8000"
   }
 }
