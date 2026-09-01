@@ -12,13 +12,28 @@ import { makeDraggable, springBack } from '../core/drag.js';
 import { itemName } from '../core/i18n.js';
 import { sfx, speak } from '../core/audio.js';
 
-/** [columns, rows] */
-const SPLIT_BY_TIER = [[2, 2], [3, 2], [3, 3]];
+/** Pieces per side. Square splits keep every piece square, which is
+    what lets the picture stay undistorted. */
+const SPLIT_BY_TIER = [2, 3, 3];
 
-/** Assembled picture size: as big as the screen comfortably allows,
-    leaving room for the tray of loose pieces beside it. */
-function boardSize() {
-  return Math.round(Math.max(240, Math.min(window.innerHeight * 0.62, window.innerWidth * 0.34)));
+/** A piece is a drag handle, so it obeys the same touch floor as any
+    other control. */
+const MIN_PIECE = 120;
+
+/**
+ * Choose the split and the board size together: the board has to sit
+ * beside a tray holding the same number of pieces, and no piece may
+ * fall below the touch floor. On a small tablet that means a coarser
+ * split — three-by-three pieces a child cannot grab would be worse
+ * than a two-by-two puzzle they can.
+ */
+function layout(want) {
+  const maxBoard = Math.max(MIN_PIECE * 2,
+    Math.min(window.innerHeight - 180, window.innerWidth * 0.44));
+  let n = want;
+  while (n > 2 && maxBoard / n < MIN_PIECE) n--;
+  const piece = Math.max(MIN_PIECE, Math.floor(maxBoard / n));
+  return { n, piece, board: piece * n };
 }
 
 export default class JigsawGame extends GameEngine {
@@ -26,14 +41,18 @@ export default class JigsawGame extends GameEngine {
   static skills = ['shapes'];
 
   build(field) {
-    const [cols, rows] = SPLIT_BY_TIER[this.tier];
+    const fit = layout(SPLIT_BY_TIER[this.tier]);
+    const n = fit.n;
+    const piece = fit.piece;
     this.item = this.rng.pick(this.pack.items);
-    this.cols = cols;
-    this.rows = rows;
-    this.board = boardSize();
+    this.cols = n;
+    this.rows = n;
+    this.board = fit.board;
 
-    const pw = this.board / cols;
-    const ph = this.board / rows;
+    const cols = n;
+    const rows = n;
+    const pw = piece;
+    const ph = piece;
     this.remaining = cols * rows;
     this.selected = null;
 
@@ -100,10 +119,14 @@ export default class JigsawGame extends GameEngine {
     }, ...this.pieces);
 
     // A small reference so the child can see what they are building.
-    const reference = el('div', {
-      'aria-label': itemName(this.item),
-      style: { fontSize: `${Math.round(this.board * 0.2)}px`, lineHeight: 1, opacity: '.9' },
-    }, this.item.e);
+    // The hardest tier withholds it — assembling from memory is the
+    // real step up once the split itself cannot get any finer.
+    const reference = this.tier < 2
+      ? el('div', {
+          'aria-label': itemName(this.item),
+          style: { fontSize: `${Math.round(this.board * 0.2)}px`, lineHeight: 1, opacity: '.9' },
+        }, this.item.e)
+      : el('div', { style: { fontSize: `${Math.round(this.board * 0.16)}px`, lineHeight: 1, opacity: '.5' } }, '❓');
 
     field.append(
       board,
@@ -170,9 +193,8 @@ export default class JigsawGame extends GameEngine {
     node.dataset.dragDisabled = 'true';
     node.style.visibility = 'hidden';
 
-    const pw = this.board / this.cols;
-    const ph = this.board / this.rows;
-    slot.replaceChildren(this.window(slot._index, pw, ph));
+    const side = this.board / this.cols;
+    slot.replaceChildren(this.window(slot._index, side, side));
     slot.classList.add('slot--full');
     slot.style.background = 'transparent';
     sfx('match');

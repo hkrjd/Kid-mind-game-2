@@ -119,7 +119,10 @@ const t0 = Date.now();
 async function auditTouchTargets(level) {
   const bad = await page.evaluate(({ min, minChrome }) => {
     const out = [];
-    const sel = '.tile, .btn, .bin, .slot, .lvl, .world, .count-item';
+    // Every button, not just the ones wearing a known class — the
+    // jigsaw builds its pieces as bare buttons, and those are exactly
+    // as tappable as anything else.
+    const sel = 'button, [role="button"], .tile, .btn, .bin, .slot, .lvl, .world, .count-item';
     for (const node of document.querySelectorAll(sel)) {
       if (node.classList.contains('tile--gone')) continue;
       const r = node.getBoundingClientRect();
