@@ -152,7 +152,15 @@ for (const level of levels) {
   let why = '';
 
   try {
-    await page.evaluate((id) => { window.__engine = null; window.location.hash = `#/level/${id}`; }, level.id);
+    await page.evaluate((id) => {
+      // Levels are reached by changing the hash, so progress persists
+      // across them. Clear it first: otherwise the adaptive difficulty
+      // accumulates and later levels of an engine get softened, so the
+      // hardest tiers would never actually be tested.
+      window.__app.resetProgress();
+      window.__engine = null;
+      window.location.hash = `#/level/${id}`;
+    }, level.id);
 
     // Wait for the engine to mount and build its field.
     await page.waitForFunction(

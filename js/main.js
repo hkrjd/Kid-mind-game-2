@@ -11,7 +11,7 @@
      #/settings    parent-gated settings
    ============================================================ */
 
-import { load as loadState, getSetting, recordStars, unlockWorld } from './core/state.js';
+import { load as loadState, getSetting, recordStars, unlockWorld, resetProgress } from './core/state.js';
 import { unlock as unlockAudio, sfx } from './core/audio.js';
 import { t } from './core/i18n.js';
 import { el } from './core/ui.js';
@@ -193,4 +193,4 @@ registerServiceWorker();
 render();
 
 /* Debug surface used by tests/smoke.mjs. */
-window.__app = { go, allLevels, playLevel, worldProgress, ENGINES };
+window.__app = { go, allLevels, playLevel, worldProgress, resetProgress, ENGINES };
