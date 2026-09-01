@@ -18,6 +18,7 @@
      node tests/audit.mjs                 # everything
      node tests/audit.mjs --engine oddone # one game
      node tests/audit.mjs --quick         # validity only, skip the slow part
+     node tests/audit.mjs --lang en       # audit the English content
    ============================================================ */
 
 import { chromium } from 'playwright';
@@ -32,6 +33,10 @@ const args = process.argv.slice(2);
 const flag = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? (args[i + 1] ?? true) : null; };
 const onlyEngine = flag('engine');
 const quick = args.includes('--quick');
+/* Letters and first-sound draw on a different alphabet and different
+   words in each language, so "the puzzle is well posed" has to be
+   asked separately of each. */
+const lang = flag('lang') || 'hi';
 
 /* ---------------- server ---------------- */
 
@@ -263,13 +268,13 @@ const consoleErrors = [];
 page.on('pageerror', (e) => consoleErrors.push(`PAGEERROR ${e.message}`));
 page.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text()));
 
-await page.addInitScript(() => {
+await page.addInitScript((l) => {
   localStorage.setItem('dimaag-ka-khel/v1', JSON.stringify({
-    lang: 'hi', sound: false, voice: false, motion: false,
+    lang: l, sound: false, voice: false, motion: false,
     stars: {}, struggle: {}, world: 99,
   }));
-  window.__lang = 'hi';
-});
+  window.__lang = l;
+}, lang);
 
 await page.goto(`http://localhost:${PORT}/index.html#/`, { waitUntil: 'networkidle' });
 
@@ -283,16 +288,17 @@ for (const l of levels) {
   if (!sample.some((s) => s.engine === l.engine && s.tier === l.tier)) sample.push(l);
 }
 
-console.log(`\nAuditing ${sample.length} levels (every engine at every tier)\n`);
+console.log(`\nAuditing ${sample.length} levels in ${lang === 'hi' ? 'Hindi' : 'English'} (every engine at every tier)\n`);
 
 const findings = [];
 
 async function openLevel(id) {
-  await page.evaluate((i) => {
+  await page.evaluate(({ i, l }) => {
     window.__app.resetProgress();
+    window.__lang = l;
     window.__engine = null;
     location.hash = `#/level/${i}`;
-  }, id);
+  }, { i: id, l: lang });
   await page.waitForFunction((i) => window.__engine && window.__level?.id === i
     && window.__engine.root?.isConnected, id, { timeout: 8000 });
   await page.waitForTimeout(120);

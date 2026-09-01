@@ -8,8 +8,10 @@
   "description": "Tablet mind games for 5-year-olds, Hindi and English",
   "private": true,
   "scripts": {
-    "test": "node tests/unit.mjs && node tests/smoke.mjs",
+    "test": "node tests/unit.mjs && node tests/audit.mjs && node tests/smoke.mjs",
     "test:unit": "node tests/unit.mjs",
+    "test:audit": "node tests/audit.mjs",
+    "test:audit:en": "node tests/audit.mjs --lang en",
     "test:levels": "node tests/smoke.mjs",
     "test:small": "node tests/smoke.mjs --viewport 800x600",
     "test:offline": "node tests/offline.mjs",

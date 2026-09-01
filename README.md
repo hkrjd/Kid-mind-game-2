@@ -176,12 +176,15 @@ npm test                 # logic checks, then all 300 levels
 npm run test:unit        # logic only — no browser, under a second
 npm run test:levels      # all 300 levels on a 10-inch tablet
 npm run test:small       # all 300 levels on a 7-inch tablet
+npm run test:audit       # are the puzzles well posed, and is help reachable?
+npm run test:audit:en    # the same, over the English content
 npm run test:offline     # still works with no network
 
 node tests/smoke.mjs --engine memory        # one game
 node tests/smoke.mjs --limit 20             # a quick check
 node tests/smoke.mjs --headed               # watch it play
 node tests/audit.mjs                        # are the puzzles well posed?
+node tests/audit.mjs --lang en              # …in English too
 node tools/check-emoji.mjs                  # no missing glyphs
 node tools/check-subpath.mjs                # works under /<repo>/ on Pages
 ```
@@ -215,7 +218,14 @@ level be won" but "is this a good puzzle". For every engine at every tier it
 checks the puzzle is well posed — exactly one right answer, the count really
 matching the pile, the odd one really odd, the maze goal really reachable —
 and then plays the part of a child who only ever taps the wrong thing, to
-prove the hint and the solve-it-for-them still get them to the end.
+prove the hint and the solve-it-for-them still get them to the end. Run it
+with `--lang en` as well: letters and first-sound draw on a different
+alphabet and different words in each language, so each needs asking
+separately.
+
+Where a game has no wrong answer to escalate from — you cannot tap a maze
+wrongly, you just stop getting anywhere — the audit stalls instead of
+tapping, and the game is expected to rescue the child on a timer.
 
 `tests/offline.mjs` installs the service worker, cuts the network, and
 checks the title screen and a cached level still work.
