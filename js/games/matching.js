@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { el, tile, delay } from '../core/ui.js';
+import { el, tile, delay, fitGrid } from '../core/ui.js';
 import { getLang } from '../core/i18n.js';
 import { sfx, speak } from '../core/audio.js';
 
@@ -23,8 +23,12 @@ export default class MatchingGame extends GameEngine {
   static skills = ['logic'];
 
   build(field) {
-    const n = PAIRS_BY_TIER[this.tier];
-    this.pairs = this.rng.sample(this.pack.pairs, n);
+    // Each side is one vertical column, so the pair count is limited
+    // by how many tiles fit down the screen — five of them run off the
+    // bottom of a 768px tablet.
+    const fit = fitGrid(PAIRS_BY_TIER[this.tier], { forceCols: 1, widthFraction: 0.34 });
+    this.pairs = this.rng.sample(this.pack.pairs, fit.count);
+    this.tileSize = fit.tile;
     this.remaining = this.pairs.length;
     this.selected = null;
 
@@ -37,6 +41,7 @@ export default class MatchingGame extends GameEngine {
         aria: nameOf(p, 'a'),
         onClick: (_e, nd) => this.tapLeft(nd),
       });
+      node.style.setProperty('--tile', `${this.tileSize}px`);
       node._pair = p;
       return node;
     });
@@ -47,6 +52,7 @@ export default class MatchingGame extends GameEngine {
         aria: nameOf(p, 'b'),
         onClick: (_e, nd) => this.tapRight(nd),
       });
+      node.style.setProperty('--tile', `${this.tileSize}px`);
       node._pair = p;
       return node;
     });

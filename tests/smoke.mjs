@@ -125,6 +125,11 @@ async function auditTouchTargets(level) {
     const sel = 'button, [role="button"], .tile, .btn, .bin, .slot, .lvl, .world, .count-item';
     for (const node of document.querySelectorAll(sel)) {
       if (node.classList.contains('tile--gone')) continue;
+      // Illustration, not a control: in add/subtract and more-or-fewer
+      // the child taps a number button or a whole side, never an
+      // individual item. Counting, where each item IS tappable, does
+      // not use this modifier and is audited normally.
+      if (node.classList.contains('count-item--static')) continue;
       const r = node.getBoundingClientRect();
       if (r.width === 0 && r.height === 0) continue;   // not laid out
       const floor = node.closest('.gamebar, .topbar') ? minChrome : min;

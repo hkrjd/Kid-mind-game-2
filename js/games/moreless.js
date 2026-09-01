@@ -50,7 +50,7 @@ export default class MoreLessGame extends GameEngine {
     this.sides = this.counts.map((count, i) => {
       const pile = el('div.count-strip', { style: { maxWidth: '100%' } });
       for (let k = 0; k < count; k++) {
-        pile.appendChild(el('span.count-item', {
+        pile.appendChild(el('span.count-item.count-item--static', {
           style: { animationDelay: `${k * 50}ms` },
         }, item.e));
       }

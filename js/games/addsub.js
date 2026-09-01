@@ -55,7 +55,7 @@ export default class AddSubGame extends GameEngine {
       const pile = el('div.count-strip');
       for (let i = 0; i < this.a; i++) {
         const gone = i >= this.a - this.b;
-        pile.appendChild(el('span.count-item', {
+        pile.appendChild(el('span.count-item.count-item--static', {
           style: gone
             ? { opacity: '.28', filter: 'grayscale(1)', transform: 'rotate(-14deg)' }
             : {},
@@ -76,7 +76,9 @@ export default class AddSubGame extends GameEngine {
   pile(n) {
     const strip = el('div.count-strip', { style: { maxWidth: '32vw' } });
     for (let i = 0; i < n; i++) {
-      strip.appendChild(el('span.count-item', { style: { animationDelay: `${i * 60}ms` } }, this.item.e));
+      strip.appendChild(el('span.count-item.count-item--static', {
+        style: { animationDelay: `${i * 60}ms` },
+      }, this.item.e));
     }
     return strip;
   }

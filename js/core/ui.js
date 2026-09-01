@@ -285,8 +285,23 @@ function gridLimits(min, widthFraction, reserveY) {
  * `reserveY` is vertical space the engine spends on something else in
  * the same field (a target picture above the grid, say).
  */
-export function fitGrid(want, { min = 120, max = 240, widthFraction = 1, reserveY = 0 } = {}) {
+export function fitGrid(want, { min = 120, max = 240, widthFraction = 1, reserveY = 0, forceCols = 0 } = {}) {
   const { gap, availW, availH, maxCols, maxRows } = gridLimits(min, widthFraction, reserveY);
+
+  if (forceCols > 0) {
+    // A layout that is a fixed number of columns by design — a pair of
+    // stacked lists, say. Only the row count can give.
+    const cols = Math.min(forceCols, Math.max(1, maxCols));
+    const count = Math.max(1, Math.min(want, cols * maxRows));
+    const rows = Math.ceil(count / cols);
+    const tile = Math.max(min, Math.min(
+      max,
+      Math.floor((availW - (cols - 1) * gap) / cols),
+      Math.floor((availH - (rows - 1) * gap) / rows),
+    ));
+    return { cols, rows, count, tile };
+  }
+
   const count = Math.max(1, Math.min(want, maxCols * maxRows));
 
   let cols = Math.min(bestCols(count), maxCols, count);

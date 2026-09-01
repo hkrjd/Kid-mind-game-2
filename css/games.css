@@ -240,5 +240,17 @@
   animation: pop var(--dur) var(--ease-pop) backwards;
 }
 .count-item:active { transform: scale(.92); }
+
+/* Illustrative piles: things to look at and count with your eyes, not
+   things to tap. Freed from the touch floor they stay compact, which
+   is what keeps a ten-item sum on one screen. */
+.count-item--static {
+  min-width: 0;
+  min-height: 0;
+  padding: 2px;
+  font-size: clamp(26px, 5.4vmin, 56px);
+  cursor: default;
+}
+.count-item--static:active { transform: none; }
 .answer-row  { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
 .big-emoji   { font-size: clamp(52px, 12vmin, 130px); line-height: 1; }
