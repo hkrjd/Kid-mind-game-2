@@ -102,11 +102,16 @@ export function struggleFor(engineId) {
 
 /**
  * `delta` is +1 per hint the child needed, -1 for a clean clear.
- * Clamped to [0, 3] so one bad day cannot permanently trivialise
- * a game, and one lucky round cannot spike the difficulty.
+ *
+ * Clamped to [0, 4]: paired with effectiveTier's halving that is a
+ * softening of up to two tiers, which is enough to walk a child all
+ * the way back to the easiest version of a game they keep finding
+ * hard. A lower ceiling would leave the hardest tier permanently out
+ * of reach for them; a higher one would let a single bad afternoon
+ * trivialise the game for good.
  */
 export function noteStruggle(engineId, delta) {
-  const next = Math.max(0, Math.min(3, (data.struggle[engineId] || 0) + delta));
+  const next = Math.max(0, Math.min(4, (data.struggle[engineId] || 0) + delta));
   data.struggle[engineId] = next;
   save();
   return next;

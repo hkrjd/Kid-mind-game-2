@@ -141,7 +141,7 @@ js/games/             20 engines, one file each
 js/screens/           hub, map, level select, settings
 tools/                icon generator, screenshot and check helpers
 docs/                 the screenshots this README links to
-tests/                smoke (plays all 300 levels) and offline checks
+tests/                unit (logic), smoke (all 300 levels), offline
 ```
 
 ### Adding a game
@@ -172,14 +172,25 @@ immediately gives new levels to every engine that uses generic packs.
 ## Tests
 
 ```bash
-npm test                                    # all 300 levels
+npm test                 # logic checks, then all 300 levels
+npm run test:unit        # logic only — no browser, under a second
+npm run test:levels      # all 300 levels on a 10-inch tablet
+npm run test:small       # all 300 levels on a 7-inch tablet
+npm run test:offline     # still works with no network
+
 node tests/smoke.mjs --engine memory        # one game
 node tests/smoke.mjs --limit 20             # a quick check
-node tests/smoke.mjs --viewport 800x600     # a small 7-inch tablet
 node tests/smoke.mjs --headed               # watch it play
-node tests/offline.mjs                      # works with no network
 node tools/check-emoji.mjs                  # no missing glyphs
 ```
+
+`tests/unit.mjs` needs no browser and runs in well under a second. It
+checks the catalog really does hold 300 unique levels split evenly across
+twenty engines and three tiers, that a level id always regenerates the same
+layout, that Hindi and English define the same keys and every engine and
+world is named in both, that no content pack is too small for the games
+that draw on it, and that the adaptive difficulty softens by two tiers and
+no more.
 
 `tests/smoke.mjs` opens every level in Chromium, calls that engine's
 `autoSolve()`, and fails unless the level reaches a real win state with a
