@@ -181,6 +181,7 @@ npm run test:offline     # still works with no network
 node tests/smoke.mjs --engine memory        # one game
 node tests/smoke.mjs --limit 20             # a quick check
 node tests/smoke.mjs --headed               # watch it play
+node tests/audit.mjs                        # are the puzzles well posed?
 node tools/check-emoji.mjs                  # no missing glyphs
 node tools/check-subpath.mjs                # works under /<repo>/ on Pages
 ```
@@ -208,6 +209,13 @@ clean console. On every level it also checks that
 
 Run it at `--viewport 800x600` as well as the default `1024x768` — the
 small-tablet pass is what catches levels that only fit on a big screen.
+
+`tests/audit.mjs` asks a different question from the other two: not "can this
+level be won" but "is this a good puzzle". For every engine at every tier it
+checks the puzzle is well posed — exactly one right answer, the count really
+matching the pile, the odd one really odd, the maze goal really reachable —
+and then plays the part of a child who only ever taps the wrong thing, to
+prove the hint and the solve-it-for-them still get them to the end.
 
 `tests/offline.mjs` installs the service worker, cuts the network, and
 checks the title screen and a cached level still work.
