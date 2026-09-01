@@ -47,7 +47,9 @@ export default class SpotDiffGame extends GameEngine {
 
     this.changed = new Set(changed);
     this.found = new Set();
-    this.totalDiffs = changed.length;
+    // Count the set, not the array: the win condition compares against
+    // this, and a duplicated index would make the level unwinnable.
+    this.totalDiffs = this.changed.size;
 
     this.tileSize = fit.tile;
     this.left = this.panel(base, cols, rows, 'L');

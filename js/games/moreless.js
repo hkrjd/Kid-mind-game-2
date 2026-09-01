@@ -27,12 +27,18 @@ export default class MoreLessGame extends GameEngine {
     const [lo, hi, minGap] = RULES_BY_TIER[this.tier];
     this.askLess = this.tier === 2 && this.rng.chance(0.4);
 
-    let a = this.rng.int(lo, hi);
+    const a = this.rng.int(lo, hi);
     let b = this.rng.int(lo, hi);
-    // Force a clear enough difference, and never a tie.
+
+    // The two sides must differ by at least minGap. Re-rolling almost
+    // always finds one; the fallback steps away from `a` in whichever
+    // direction still has room, so the piles can never come out equal
+    // — a tie would leave the question with no right answer.
     let guard = 0;
     while (Math.abs(a - b) < minGap && guard++ < 40) b = this.rng.int(lo, hi);
-    if (a === b) b = Math.min(hi, a + minGap);
+    if (Math.abs(a - b) < minGap) {
+      b = a + minGap <= hi ? a + minGap : a - minGap;
+    }
 
     const item = this.rng.pick(this.pack.items);
     this.counts = [a, b];
