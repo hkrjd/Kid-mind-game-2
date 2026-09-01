@@ -42,7 +42,7 @@ export const ENGINES = {
 };
 
 /** Levels contributed by each engine. 20 engines x 15 = 300. */
-export const LEVELS_PER_ENGINE = 15;
+const LEVELS_PER_ENGINE = 15;
 
 /**
  * Ten worlds x two engines x 15 levels = 300 levels.

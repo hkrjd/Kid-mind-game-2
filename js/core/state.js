@@ -5,7 +5,7 @@
    stays on their own tablet.
    ============================================================ */
 
-import { setLang, getLang, LANGS } from './i18n.js';
+import { setLang, LANGS } from './i18n.js';
 import { setSound, setVoice } from './audio.js';
 
 const KEY = 'dimaag-ka-khel/v1';
@@ -15,6 +15,7 @@ const DEFAULTS = {
   sound: true,
   voice: true,
   motion: true,
+  fullscreen: true,
   /** levelId -> stars earned (1..3). Absent = not yet completed. */
   stars: {},
   /**
@@ -46,7 +47,7 @@ export function load() {
 }
 
 /** Debounced so rapid star updates do not thrash storage. */
-export function save() {
+function save() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try { localStorage.setItem(KEY, JSON.stringify(data)); } catch { /* quota / private mode */ }
@@ -54,7 +55,7 @@ export function save() {
 }
 
 /** Push the stored settings into the modules that own them. */
-export function applySettings() {
+function applySettings() {
   setLang(data.lang);
   setSound(data.sound);
   setVoice(data.voice);
@@ -69,10 +70,6 @@ export function setSetting(k, v) {
   data[k] = v;
   applySettings();
   save();
-}
-
-export function toggleLang() {
-  setSetting('lang', getLang() === 'hi' ? 'en' : 'hi');
 }
 
 /* ---------------- progress ---------------- */
@@ -117,8 +114,6 @@ export function noteStruggle(engineId, delta) {
 
 /* ---------------- world unlocking ---------------- */
 
-export function unlockedWorld() { return data.world; }
-
 export function unlockWorld(idx) {
   if (idx > data.world) {
     data.world = idx;
@@ -133,9 +128,4 @@ export function resetProgress() {
   data.struggle = {};
   data.world = 0;
   save();
-}
-
-/** Debug/testing hook — lets the smoke test reach any level. */
-export function unlockAll() {
-  data.world = 99;
 }

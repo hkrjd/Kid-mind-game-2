@@ -6,7 +6,7 @@
    engines themselves load lazily when a level is actually opened.
    ============================================================ */
 
-import { WORLDS, ENGINES, LEVELS_PER_ENGINE, LEVELS_PER_WORLD, TOTAL_LEVELS, UNLOCK_RATIO } from '../content/worlds.js';
+import { WORLDS, ENGINES, LEVELS_PER_WORLD, TOTAL_LEVELS, UNLOCK_RATIO } from '../content/worlds.js';
 import { Rng } from './rng.js';
 import { isDone, starsFor } from './state.js';
 
@@ -22,7 +22,7 @@ function tierFor(indexInEngine) {
 let LEVELS = null;
 
 /** Build (once) the flat, ordered list of all 300 levels. */
-export function buildCatalog() {
+function buildCatalog() {
   if (LEVELS) return LEVELS;
   const out = [];
 

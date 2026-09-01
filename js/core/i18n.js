@@ -81,7 +81,7 @@ const STRINGS = {
     'set.reset.yes': 'हाँ, मिटाओ',
     'set.reset.no': 'नहीं',
     'set.progress': 'प्रगति',
-    'set.progress.val': '{done} में से {total} खेल पूरे · {stars} सितारे',
+    'set.progress.val': '{total} में से {done} खेल पूरे · {stars} सितारे',
 
     /* --- parent gate --- */
     'gate.title': 'बड़ों के लिए',

@@ -220,11 +220,6 @@ export const PACKS = {
 /** Every pack an engine may draw generic items from. */
 export const GENERIC_PACK_IDS = ['animals', 'fruits', 'vehicles', 'nature', 'toys', 'food', 'sea', 'birds', 'home'];
 
-/** Packs with clean colour/shape attributes for sorting games. */
-export const ATTRIBUTE_PACK_IDS = ['shapes'];
-
-export const ALL_PACK_IDS = Object.keys(PACKS);
-
 export function getPack(id) {
   return PACKS[id] || PACKS.animals;
 }

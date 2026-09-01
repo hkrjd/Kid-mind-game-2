@@ -11,7 +11,7 @@
 
 import { sfx } from './audio.js';
 
-export const SNAP_RADIUS = 110;   // px — roughly a fingertip's error
+const SNAP_RADIUS = 110;   // px — roughly a fingertip's error
 
 function centreOf(el) {
   const r = el.getBoundingClientRect();

@@ -61,6 +61,7 @@ export default class SpotDiffGame extends GameEngine {
       });
       node._index = i;
       node._side = side;
+      node._item = item;
       return node;
     });
 
@@ -92,7 +93,7 @@ export default class SpotDiffGame extends GameEngine {
       t.classList.remove('tile--hint');
     }
     sfx('match');
-    speak(itemName(node._item ?? {}) || '');
+    speak(itemName(node._item));
 
     if (this.found.size === this.totalDiffs) this.after(650, () => this.win());
   }

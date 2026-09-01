@@ -8,7 +8,7 @@
    ============================================================ */
 
 /** FNV-1a: string -> 32-bit unsigned int. */
-export function hashSeed(str) {
+function hashSeed(str) {
   let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) {
     h ^= str.charCodeAt(i);

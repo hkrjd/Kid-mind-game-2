@@ -10,7 +10,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { el, delay } from '../core/ui.js';
+import { el, delay, fitSquareCanvas } from '../core/ui.js';
 import { sfx, speak } from '../core/audio.js';
 import { t } from '../core/i18n.js';
 
@@ -37,12 +37,7 @@ export default class MazeGame extends GameEngine {
 
     this.bindPointer();
 
-    // Size to the box we actually got, and redraw on rotation.
-    const resize = () => this.resize();
-    this._resize = resize;
-    window.addEventListener('resize', resize);
-    this.cleanup(() => window.removeEventListener('resize', resize));
-    requestAnimationFrame(resize);
+    this.cleanup(fitSquareCanvas(this.canvas, (side) => this.onResize(side)));
   }
 
   /* ---------------- maze generation ---------------- */
@@ -96,19 +91,10 @@ export default class MazeGame extends GameEngine {
 
   /* ---------------- rendering ---------------- */
 
-  resize() {
-    if (this.destroyed || !this.canvas) return;
-    const box = this.canvas.parentElement.getBoundingClientRect();
-    const side = Math.max(240, Math.floor(Math.min(box.width, box.height)) - 8);
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  onResize(side) {
+    if (this.destroyed) return;
     this.side = side;
     this.cell = side / this.n;
-    this.canvas.style.width = `${side}px`;
-    this.canvas.style.height = `${side}px`;
-    this.canvas.width = Math.round(side * dpr);
-    this.canvas.height = Math.round(side * dpr);
-    const ctx = this.canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.draw();
   }
 

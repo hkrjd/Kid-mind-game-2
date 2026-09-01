@@ -35,8 +35,6 @@ function ac() {
 
 export function setSound(on) { soundOn = !!on; }
 export function setVoice(on) { voiceOn = !!on; if (!voiceOn) stopSpeech(); }
-export function isSoundOn() { return soundOn; }
-export function isVoiceOn() { return voiceOn; }
 
 /** Call once from the first real user gesture to unlock audio. */
 export function unlock() {
@@ -184,7 +182,7 @@ function pickVoice() {
       || null;
 }
 
-export function stopSpeech() {
+function stopSpeech() {
   try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
 }
 

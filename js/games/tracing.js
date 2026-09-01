@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { GameEngine } from '../core/engine.js';
-import { el, delay } from '../core/ui.js';
+import { el, delay, fitSquareCanvas } from '../core/ui.js';
 import { sfx, speak } from '../core/audio.js';
 import { t } from '../core/i18n.js';
 
@@ -92,23 +92,12 @@ export default class TracingGame extends GameEngine {
 
     this.bindPointer();
 
-    const resize = () => this.resize();
-    window.addEventListener('resize', resize);
-    this.cleanup(() => window.removeEventListener('resize', resize));
-    requestAnimationFrame(resize);
+    this.cleanup(fitSquareCanvas(this.canvas, (side) => this.onResize(side)));
   }
 
-  resize() {
-    if (this.destroyed || !this.canvas) return;
-    const box = this.canvas.parentElement.getBoundingClientRect();
-    const side = Math.max(240, Math.floor(Math.min(box.width, box.height)) - 8);
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  onResize(side) {
+    if (this.destroyed) return;
     this.side = side;
-    this.canvas.style.width = `${side}px`;
-    this.canvas.style.height = `${side}px`;
-    this.canvas.width = Math.round(side * dpr);
-    this.canvas.height = Math.round(side * dpr);
-    this.canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
     this.draw();
   }
 

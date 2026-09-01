@@ -113,9 +113,6 @@ export function flashOops(node) {
 export function showHint(node) {
   node?.classList.add('tile--hint');
 }
-export function clearHint(node) {
-  node?.classList.remove('tile--hint');
-}
 export function clearAllHints(root = document) {
   root.querySelectorAll('.tile--hint').forEach((n) => n.classList.remove('tile--hint'));
 }
@@ -274,4 +271,42 @@ export function delay(ms) {
   const p = new Promise((r) => { id = setTimeout(r, ms); });
   p.cancel = () => clearTimeout(id);
   return p;
+}
+
+/* ------------------------------------------------------------
+   Canvas helper
+   ------------------------------------------------------------ */
+
+/**
+ * Fit a square canvas to its parent and keep it fitted.
+ *
+ * Handles device-pixel-ratio scaling (so lines are crisp on a
+ * retina tablet) and re-runs on rotation or any layout change,
+ * which a one-shot measurement at build time always gets wrong.
+ *
+ * Calls `onSize(sidePx)` after each resize. Returns a teardown.
+ */
+export function fitSquareCanvas(canvas, onSize) {
+  const apply = () => {
+    const box = canvas.parentElement?.getBoundingClientRect();
+    if (!box || box.width < 2 || box.height < 2) return;
+    const side = Math.max(240, Math.floor(Math.min(box.width, box.height)) - 8);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.style.width = `${side}px`;
+    canvas.style.height = `${side}px`;
+    canvas.width = Math.round(side * dpr);
+    canvas.height = Math.round(side * dpr);
+    canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    onSize(side);
+  };
+
+  const ro = new ResizeObserver(apply);
+  if (canvas.parentElement) ro.observe(canvas.parentElement);
+  window.addEventListener('resize', apply);
+  requestAnimationFrame(apply);
+
+  return () => {
+    ro.disconnect();
+    window.removeEventListener('resize', apply);
+  };
 }

@@ -80,6 +80,22 @@ await page.addInitScript(() => {
 
 await page.goto(`http://localhost:${PORT}/index.html#/`, { waitUntil: 'networkidle' });
 
+/* Hindi and English must define exactly the same keys — a string
+   added to one language and not the other is a bug, not a warning. */
+const i18nGaps = await page.evaluate(async () => {
+  const m = await import('./js/core/i18n.js');
+  return m.missingKeys();
+});
+if (i18nGaps.missingInHi.length || i18nGaps.missingInEn.length) {
+  console.error('\ni18n key parity FAILED');
+  if (i18nGaps.missingInHi.length) console.error('  missing in hi:', i18nGaps.missingInHi.join(', '));
+  if (i18nGaps.missingInEn.length) console.error('  missing in en:', i18nGaps.missingInEn.join(', '));
+  await browser.close();
+  server.close();
+  process.exit(1);
+}
+console.log('i18n key parity: ok');
+
 let levels = await page.evaluate(() => window.__app.allLevels().map((l) => ({
   id: l.id, engine: l.engine, number: l.number, tier: l.tier, packId: l.packId,
 })));
@@ -99,7 +115,6 @@ async function auditTouchTargets(level) {
     const out = [];
     const sel = '.tile, .btn, .bin, .slot, .lvl, .world, .count-item';
     for (const node of document.querySelectorAll(sel)) {
-      if (node.closest('.reward')) continue;           // celebration UI
       if (node.classList.contains('tile--gone')) continue;
       const r = node.getBoundingClientRect();
       if (r.width === 0 && r.height === 0) continue;   // not laid out

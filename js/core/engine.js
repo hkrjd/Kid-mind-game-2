@@ -19,8 +19,8 @@ import { t, randomPraise, randomOops } from './i18n.js';
 import { speak, sfx, say } from './audio.js';
 import { noteStruggle, struggleFor } from './state.js';
 
-export const HINT_AFTER = 2;
-export const SOLVE_AFTER = 4;
+const HINT_AFTER = 2;
+const SOLVE_AFTER = 4;
 
 export class GameEngine {
   /** Subclasses override. `skills` is metadata for the world map. */
