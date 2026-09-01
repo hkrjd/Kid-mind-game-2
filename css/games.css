@@ -103,6 +103,17 @@
 .tile--flat  { box-shadow: var(--shadow-sm); }
 
 @keyframes pop     { 0% { transform: scale(1); } 45% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+/* Introduces a level by rippling across everything tappable, so a
+   child who cannot read still sees where the game happens. It
+   deliberately does not point at the answer. */
+.tile--demo, .slot--demo, .bin--demo, .count-item--demo {
+  animation: demo-bump 620ms var(--ease-pop);
+}
+@keyframes demo-bump {
+  0%, 100% { transform: none; }
+  40%      { transform: scale(1.1) translateY(-6px); }
+}
 @keyframes wobble  { 0%,100% { transform: none; } 20% { transform: translateX(-12px) rotate(-5deg); }
                      45% { transform: translateX(12px) rotate(5deg); } 70% { transform: translateX(-6px); } }
 @keyframes hint-glow {

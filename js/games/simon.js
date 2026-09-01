@@ -44,11 +44,9 @@ export default class SimonGame extends GameEngine {
     field.appendChild(grid(2, ...this.pads));
   }
 
-  /** Say the prompt, then play the sequence for the first time. */
-  async intro() {
-    if (this.destroyed) return;
-    await super.intro();
-    await this.playSequence();
+  /** Playing the sequence is this game's demonstration. */
+  demo() {
+    this.playSequence();
   }
 
   /** Flash and sound each pad in turn, then hand control to the child. */

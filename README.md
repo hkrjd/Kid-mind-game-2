@@ -66,7 +66,7 @@ These are enforced everywhere, and the test suite checks the ones it can:
 
 | Rule | Why |
 |---|---|
-| **No reading required** | Every instruction is spoken and demonstrated. Text is decoration. |
+| **No reading required** | Every instruction is spoken, then shown: a ripple runs across everything tappable so a pre-reader sees where the game happens. It never points at the answer. |
 | **120px minimum touch target** | A five-year-old's fingertip plus their aiming error. The smoke test fails the build if anything is smaller. |
 | **Tap and drag only** | No pinch, swipe, double-tap or long-press. Drags snap from 110px away. |
 | **No failure state** | No timer, no lives, no "Game Over", no score that goes down. A wrong tap wobbles and nothing else. |
@@ -184,13 +184,17 @@ node tests/smoke.mjs --headed               # watch it play
 node tools/check-emoji.mjs                  # no missing glyphs
 ```
 
-`tests/unit.mjs` needs no browser and runs in well under a second. It
-checks the catalog really does hold 300 unique levels split evenly across
-twenty engines and three tiers, that a level id always regenerates the same
+`tests/unit.mjs` needs no browser and runs in about a second. It checks the
+catalog really does hold 300 unique levels split evenly across twenty
+engines and three tiers, that a level id always regenerates the same
 layout, that Hindi and English define the same keys and every engine and
 world is named in both, that no content pack is too small for the games
 that draw on it, and that the adaptive difficulty softens by two tiers and
 no more.
+
+It also checks the promise the whole design rests on: **every engine has a
+complete help ladder.** A game missing its hint or its solve-it-for-them
+step could strand a child, so a new engine without both fails the build.
 
 `tests/smoke.mjs` opens every level in Chromium, calls that engine's
 `autoSolve()`, and fails unless the level reaches a real win state with a

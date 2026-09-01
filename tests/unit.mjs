@@ -9,11 +9,22 @@
 
 /* Minimal DOM and storage stubs — these modules only touch them at
    the edges, and the logic under test does not. */
-globalThis.window = globalThis.window || {};
+globalThis.window = globalThis.window || {
+  innerWidth: 1024,
+  innerHeight: 768,
+  addEventListener() {},
+  removeEventListener() {},
+};
 globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
 globalThis.document = {
   documentElement: {},
   body: { classList: { toggle() {} } },
+  addEventListener() {},
+  createElement: () => ({
+    style: {}, dataset: {},
+    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    setAttribute() {}, addEventListener() {}, append() {}, appendChild() {},
+  }),
 };
 
 const { Rng } = await import('../js/core/rng.js');
@@ -223,6 +234,39 @@ group('content packs', () => {
     state.noteStruggle('counting', 1);
     return effectiveTier('counting', 2) === 1 && effectiveTier('memory', 2) === 2;
   })());
+
+  if (failures === before) console.log('  ✓ all good');
+}
+
+/* ---------------- the help ladder ---------------- */
+
+/*
+ * The one promise the whole design rests on: a child can never get
+ * stuck. Two mistakes pulse the answer, four solve the step outright.
+ * An engine missing either half would strand them, so every engine is
+ * checked for a complete ladder — and for the autoSolve() the level
+ * suite drives it with.
+ */
+{
+  console.log('\nhelp ladder');
+  const before = failures;
+
+  for (const [id, spec] of Object.entries(worlds.ENGINES)) {
+    const mod = await import(`../js/games/${spec.module}.js`);
+    const Engine = mod.default;
+    const proto = Engine?.prototype;
+
+    ok(`${id}: exports an engine`, typeof Engine === 'function');
+    ok(`${id}: declares its own id`, Engine?.id === id, `got ${Engine?.id}`);
+
+    // A hint is either hintTarget() for the base ladder, or a
+    // giveHint() the engine draws itself (the canvas games).
+    ok(`${id}: can hint`,
+      typeof proto?.hintTarget === 'function' || Object.hasOwn(proto ?? {}, 'giveHint'));
+    ok(`${id}: can solve the step for them`, typeof proto?.solveStep === 'function');
+    ok(`${id}: can be driven by the test suite`, typeof proto?.autoSolve === 'function');
+    ok(`${id}: builds a level`, typeof proto?.build === 'function');
+  }
 
   if (failures === before) console.log('  ✓ all good');
 }

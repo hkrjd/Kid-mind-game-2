@@ -17,7 +17,7 @@ import { el, gameBar, rewardOverlay, confetti, flashOk, flashOops,
          showHint, clearAllHints, delay } from './ui.js';
 import { t, randomPraise, randomOops } from './i18n.js';
 import { speak, sfx, say } from './audio.js';
-import { noteStruggle, struggleFor } from './state.js';
+import { noteStruggle, struggleFor, getSetting } from './state.js';
 
 const HINT_AFTER = 2;
 const SOLVE_AFTER = 4;
@@ -80,12 +80,39 @@ export class GameEngine {
     return this.root;
   }
 
-  /** Speak the prompt, then let the subclass demo it. */
+  /** Speak the prompt, then show what the child can touch. */
   async intro() {
     if (this.destroyed) return;
     await say(this.prompt());
     if (this.destroyed) return;
-    this.demo?.();
+    this.demo();
+  }
+
+  /**
+   * A five-year-old cannot read the prompt, so after saying it we
+   * show it: a quick ripple across everything tappable. It says
+   * "the game happens here" without hinting at the answer, which a
+   * pointer at the correct tile would give away.
+   *
+   * Engines with their own way of demonstrating override this —
+   * Simon plays its sequence instead.
+   */
+  demo() {
+    if (this.destroyed || this.solved || !getSetting('motion')) return;
+
+    const targets = [...this.field.querySelectorAll('.tile, .slot, .bin, .count-item')]
+      .filter((n) => !n.classList.contains('tile--gone'))
+      .slice(0, 14);          // a long ripple stops reading as one gesture
+
+    targets.forEach((node, i) => {
+      const cls = node.classList.contains('bin') ? 'bin--demo'
+        : node.classList.contains('slot') ? 'slot--demo'
+          : node.classList.contains('count-item') ? 'count-item--demo' : 'tile--demo';
+      this.after(i * 70, () => {
+        node.classList.add(cls);
+        this.after(700, () => node.classList.remove(cls));
+      });
+    });
   }
 
   destroy() {
