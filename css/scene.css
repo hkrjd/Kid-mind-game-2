@@ -1,0 +1,78 @@
+/* ============================================================
+   scene.css — the animated backdrop.
+
+   Everything here sits behind the game and takes no pointer
+   events, so it cannot affect layout or swallow a tap.
+   ============================================================ */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(160deg, var(--sky-top, #6f5bbd), var(--sky-bottom, #3d2f6b));
+}
+
+/* Screens paint their own background; with a scene present that
+   background must get out of the way, and the content must sit above. */
+.screen--scened { background: none !important; position: relative; }
+.screen--scened > *:not(.scene) { position: relative; z-index: 1; }
+
+/* ---------------- clouds ---------------- */
+
+.scene__cloud {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .055);
+  filter: blur(26px);
+  animation: cloud-drift linear infinite;
+}
+.scene__cloud--0 { width: 46vw; height: 24vh; top: 6%;  left: -50vw; animation-duration: 68s; }
+.scene__cloud--1 { width: 34vw; height: 18vh; top: 44%; left: -40vw; animation-duration: 92s; animation-delay: -30s; }
+.scene__cloud--2 { width: 56vw; height: 28vh; top: 68%; left: -60vw; animation-duration: 116s; animation-delay: -60s; }
+
+@keyframes cloud-drift { to { transform: translateX(190vw); } }
+
+/* ---------------- floating motifs ---------------- */
+
+.scene__mote {
+  position: absolute;
+  bottom: -12vh;
+  opacity: .16;
+  line-height: 1;
+  animation-name: mote-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes mote-rise {
+  0%   { transform: translateY(0) rotate(0deg);      opacity: 0; }
+  12%  { opacity: .18; }
+  88%  { opacity: .18; }
+  100% { transform: translateY(-122vh) rotate(210deg); opacity: 0; }
+}
+
+/* ---------------- a soft light from the top corner ---------------- */
+
+.scene__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 78% 12%,
+    color-mix(in srgb, var(--scene-tint) 42%, transparent) 0%, transparent 52%);
+}
+
+/* Fallback for engines without color-mix: still a glow, just untinted. */
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .scene__glow { background: radial-gradient(circle at 78% 12%, rgba(255,255,255,.14) 0%, transparent 52%); }
+}
+
+/* ---------------- motion off ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .scene__cloud, .scene__mote { animation: none !important; }
+  .scene__mote { opacity: .12; bottom: auto; top: 40%; }
+}
+body.no-motion .scene__cloud,
+body.no-motion .scene__mote { animation: none !important; }
+body.no-motion .scene__mote { opacity: .12; bottom: auto; top: 40%; }

@@ -8,6 +8,7 @@
 import { el, topBar } from '../core/ui.js';
 import { t } from '../core/i18n.js';
 import { WORLDS } from '../content/worlds.js';
+import { createScene } from '../core/scene.js';
 import { worldProgress } from '../core/catalog.js';
 import { sfx } from '../core/audio.js';
 
@@ -36,5 +37,6 @@ export function mapScreen({ go }) {
     grid.appendChild(card);
   });
 
-  return el('div.screen.map', {}, topBar(t('app.title'), () => go('#/')), grid);
+  return el('div.screen.map.screen--scened', {},
+    createScene(), topBar(t('app.title'), () => go('#/')), grid);
 }

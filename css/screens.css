@@ -43,9 +43,13 @@
 .hub__logo {
   font-size: clamp(56px, 13vmin, 130px);
   line-height: 1;
-  animation: bob 3.2s ease-in-out infinite;
+  display: grid;
+  place-items: center;
 }
-@keyframes bob { 50% { transform: translateY(-14px) rotate(-4deg); } }
+.hub__mascot {
+  width: clamp(110px, 22vmin, 190px);
+  height: clamp(110px, 22vmin, 190px);
+}
 .hub__title {
   margin: 0;
   color: #fff;

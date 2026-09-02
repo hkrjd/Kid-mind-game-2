@@ -9,6 +9,7 @@
 import { el, topBar } from '../core/ui.js';
 import { t } from '../core/i18n.js';
 import { WORLDS } from '../content/worlds.js';
+import { createScene } from '../core/scene.js';
 import { levelsInWorld, isLevelUnlocked } from '../core/catalog.js';
 import { starsFor, isDone } from '../core/state.js';
 import { sfx, speak } from '../core/audio.js';
@@ -37,5 +38,7 @@ export function levelSelectScreen(worldIndex, { go }) {
     grid.appendChild(btn);
   });
 
-  return el('div.screen.map', {}, topBar(t(world.nameKey), () => go('#/map')), grid);
+  // Tinted by this category, so it feels like a place of its own.
+  return el('div.screen.map.screen--scened', {},
+    createScene(world.id), topBar(t(world.nameKey), () => go('#/map')), grid);
 }

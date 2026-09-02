@@ -1,0 +1,118 @@
+/* ============================================================
+   mascot.css — Gullu's moods.
+
+   All motion is CSS on a hand-authored SVG, so the mascot costs
+   nothing while idle and disappears cleanly when a child (or a
+   parent) has animations turned off.
+   ============================================================ */
+
+.mascot {
+  --m-shell: url(#m-body);
+  display: block;
+  overflow: visible;
+  pointer-events: none;   /* never steals a tap from the game */
+}
+
+.mascot .m-shell  { fill: url(#m-body); }
+.mascot .m-tummy  { fill: url(#m-belly); }
+.mascot .m-tuft   { fill: #17808f; }
+.mascot .m-wing   { fill: #17808f; }
+.mascot .m-foot   { fill: #f5a623; }
+.mascot .m-beak   { fill: #f5a623; }
+.mascot .m-white  { fill: #fffdf7; }
+.mascot .m-pupil  { fill: #2a2340; }
+.mascot .m-glint  { fill: #fff; }
+.mascot .m-shadow { fill: rgba(0, 0, 0, .13); }
+.mascot .m-cheek  { fill: #ff9db5; opacity: 0; transition: opacity var(--dur); }
+.mascot .m-spark  { fill: var(--joy-yellow); opacity: 0; }
+
+/* Give every animated part its own local origin, or SVG rotates
+   things about the top-left of the whole canvas. */
+.mascot .m-all, .mascot .m-body, .mascot .m-eye,
+.mascot .m-wing, .mascot .m-pupil, .mascot .m-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ---------------- idle: breathing, blinking, glancing ---------------- */
+
+.mascot--idle .m-all   { animation: m-bob 3.4s ease-in-out infinite; }
+.mascot--idle .m-eye   { animation: m-blink 5.2s infinite; }
+.mascot--idle .m-eye--r { animation-delay: .06s; }
+.mascot--idle .m-pupil { animation: m-glance 7s ease-in-out infinite; }
+
+@keyframes m-bob    { 50% { transform: translateY(-5px) scale(1.015); } }
+@keyframes m-blink  { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+@keyframes m-glance {
+  0%, 40%, 100% { transform: translateX(0); }
+  50%, 62%      { transform: translateX(4px); }
+  75%, 85%      { transform: translateX(-4px); }
+}
+
+/* ---------------- think: leaning in over the puzzle ---------------- */
+
+.mascot--think .m-body    { animation: m-lean 2.6s ease-in-out infinite; }
+.mascot--think .m-eye     { animation: m-blink 4s infinite; }
+.mascot--think .m-pupil   { transform: translateY(4px); }
+.mascot--think .m-wing--r { animation: m-ponder 2.6s ease-in-out infinite; }
+
+@keyframes m-lean   { 50% { transform: rotate(-5deg) translateY(-2px); } }
+@keyframes m-ponder { 50% { transform: rotate(-16deg) translate(-6px, -10px); } }
+
+/* ---------------- happy: a bounce and a raised wing ---------------- */
+
+.mascot--happy .m-all     { animation: m-hop .62s var(--ease-pop) 2; }
+.mascot--happy .m-wing--l { animation: m-wave .32s ease-in-out 4; }
+.mascot--happy .m-cheek   { opacity: .85; }
+.mascot--happy .m-eye     { transform: scaleY(.62); }   /* squinting with delight */
+
+@keyframes m-hop  { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-18px); } }
+@keyframes m-wave { 50% { transform: rotate(-28deg) translateY(-6px); } }
+
+/* ---------------- cheer: the win screen ---------------- */
+
+.mascot--cheer .m-all     { animation: m-cheer .8s var(--ease-pop) 3; }
+.mascot--cheer .m-wing--l { animation: m-wave .26s ease-in-out 9; }
+.mascot--cheer .m-wing--r { animation: m-wave-r .26s ease-in-out 9; }
+.mascot--cheer .m-cheek   { opacity: .9; }
+.mascot--cheer .m-eye     { transform: scaleY(.55); }
+.mascot--cheer .m-spark   { animation: m-sparkle 1s ease-in-out infinite; }
+.mascot--cheer .m-spark:nth-child(2) { animation-delay: .28s; }
+.mascot--cheer .m-spark:nth-child(3) { animation-delay: .55s; }
+
+@keyframes m-cheer   { 0%, 100% { transform: translateY(0) rotate(0); }
+                       30% { transform: translateY(-26px) rotate(-7deg); }
+                       65% { transform: translateY(-8px) rotate(6deg); } }
+@keyframes m-wave-r  { 50% { transform: rotate(28deg) translateY(-6px); } }
+@keyframes m-sparkle { 0%, 100% { opacity: 0; transform: scale(.4); }
+                       50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
+
+/* ---------------- oops: sympathy, never disapproval ----------------
+   A five-year-old reads a frown as "you failed", which is the one
+   message this game never sends. Gullu just tilts his head. */
+
+.mascot--oops .m-body  { animation: m-tilt 1s ease-in-out 2; }
+.mascot--oops .m-eye   { animation: m-blink-slow 1s ease-in-out 2; }
+.mascot--oops .m-pupil { transform: translateY(3px); }
+
+@keyframes m-tilt       { 25% { transform: rotate(9deg); } 75% { transform: rotate(-9deg); } }
+@keyframes m-blink-slow { 50% { transform: scaleY(.3); } }
+
+/* ---------------- placement ---------------- */
+
+/* In a level the mascot rides in the top bar rather than floating
+   over the field. Floating put him across a jigsaw slot and a memory
+   card, and a card a child cannot see is worse than no mascot at all.
+   The bar is chrome, so here he can never cover the puzzle. */
+.mascot--bar {
+  flex: 0 0 auto;
+  width: clamp(56px, 9vmin, 92px);
+  height: clamp(56px, 9vmin, 92px);
+}
+
+/* ---------------- motion off ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot * { animation: none !important; }
+}
+body.no-motion .mascot * { animation: none !important; }

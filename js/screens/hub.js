@@ -12,10 +12,16 @@ import { t } from '../core/i18n.js';
 import { totalStars, completedCount } from '../core/state.js';
 import { TOTAL_LEVELS } from '../core/catalog.js';
 import { speak } from '../core/audio.js';
+import { createScene } from '../core/scene.js';
+import { createMascot, setMood } from '../core/mascot.js';
 
 export function hubScreen({ go }) {
-  const screen = el('div.screen.hub', {},
-    el('div.hub__logo', { text: '🧠' }),
+  const gullu = createMascot({ size: 150 });
+  gullu.classList.add('hub__mascot');
+
+  const screen = el('div.screen.hub.screen--scened', {},
+    createScene(),
+    el('div.hub__logo', {}, gullu),
     el('h1.hub__title', { text: t('app.title') }),
     el('p.hub__sub', { text: t('app.subtitle') }),
 
@@ -27,7 +33,12 @@ export function hubScreen({ go }) {
       button(`▶ ${t('app.play')}`, () => go('#/map'), { cls: 'hub__play' }),
       iconButton('⚙️', () => go('#/settings'), t('app.settings'), 'btn--ghost')));
 
-  // Greet on arrival so a child who cannot read still knows what to do.
-  setTimeout(() => speak(`${t('app.title')}. ${t('app.play')}!`), 500);
+  // Greet on arrival so a child who cannot read still knows what to do,
+  // with a wave from Gullu to go with it.
+  setTimeout(() => {
+    setMood(gullu, 'happy');
+    setTimeout(() => setMood(gullu, 'idle'), 1800);
+    speak(`${t('app.title')}. ${t('app.play')}!`);
+  }, 500);
   return screen;
 }

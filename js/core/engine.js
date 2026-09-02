@@ -16,6 +16,8 @@
 import { el, gameBar, rewardOverlay, confetti, flashOk, flashOops,
          showHint, clearAllHints, delay } from './ui.js';
 import { t, randomPraise, randomOops } from './i18n.js';
+import { createScene } from './scene.js';
+import { createMascot, setMood, flashMood } from './mascot.js';
 import { speak, sfx, say } from './audio.js';
 import { noteStruggle, struggleFor, getSetting } from './state.js';
 
@@ -64,7 +66,14 @@ export class GameEngine {
     this.host = host;
 
     this.field = el('div.field');
-    this.root = el('div.game', {}, this.field);
+    this.root = el('div.game.game--scened', {}, this.field);
+
+    // The backdrop is absolutely positioned, so it takes no layout
+    // space and cannot shift a control off-screen.
+    this.root.prepend(createScene(this.level.worldId));
+    this.mascot = createMascot();
+    this.mascot.classList.add('mascot--bar');
+
     host.appendChild(this.root);
 
     // Build first. Several prompts describe what the level turned out
@@ -79,6 +88,8 @@ export class GameEngine {
       onReplay: () => this.intro(),
     });
     this.setPrompt = chrome.setPrompt;
+    // Next to the prompt he is reacting to, and clear of the field.
+    chrome.bar.insertBefore(this.mascot, chrome.bar.children[1]);
     this.root.prepend(chrome.bar);
 
     // Let the field paint before the voice starts, so the child is
@@ -126,6 +137,7 @@ export class GameEngine {
     this.destroyed = true;
     this._timers.forEach(clearTimeout);
     this._timers.clear();
+    this._moodOff?.();
     this._teardowns.forEach((fn) => { try { fn(); } catch { /* ignore */ } });
     this._teardowns.length = 0;
     this.onDestroy?.();
@@ -164,6 +176,7 @@ export class GameEngine {
   correct(node, { praise = false, silent = false } = {}) {
     if (node) flashOk(node);
     else if (!silent) sfx('correct');
+    this.cheerUp('happy');
     if (praise || this.rng.chance(0.34)) speak(randomPraise(this.rng));
   }
 
@@ -174,6 +187,8 @@ export class GameEngine {
   wrong(node) {
     if (node) flashOops(node);
     else sfx('oops');
+    // Sympathy, never disapproval — the game never tells a child off.
+    this.cheerUp('oops');
     this.mistakes++;
 
     if (this.mistakes === this.constructor.hintAfter) {
@@ -214,6 +229,12 @@ export class GameEngine {
       else this.giveAway();
       this.noteProgress();
     });
+  }
+
+  /** Put the mascot through a mood, cleaning up if the level ends. */
+  cheerUp(mood, ms) {
+    this._moodOff?.();
+    this._moodOff = flashMood(this.mascot, mood, ms);
   }
 
   /** Step 1 of the ladder: pulse the answer. */
@@ -263,6 +284,8 @@ export class GameEngine {
     if (this.destroyed) return;
 
     confetti(this.root);
+    this._moodOff?.();
+    setMood(this.mascot, 'cheer');
     speak(randomPraise(this.rng));
 
     const overlay = rewardOverlay({

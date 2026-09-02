@@ -5,12 +5,18 @@
    ============================================================ */
 
 .game {
+  position: relative;          /* the scene and the mascot anchor here */
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
   background: linear-gradient(160deg, var(--bg-soft), var(--bg-mid));
 }
+/* With a backdrop behind it the game's own fill has to step aside, and
+   the bar and play field have to sit above it. */
+.game--scened { background: none; }
+.game--scened > .gamebar,
+.game--scened > .field { position: relative; z-index: 1; }
 
 /* ---------- Game top bar: home, prompt, replay-voice ---------- */
 .gamebar {

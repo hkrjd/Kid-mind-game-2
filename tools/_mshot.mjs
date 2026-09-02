@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const p = await b.newPage({ viewport: { width: 1180, height: 380 }, deviceScaleFactor: 2 });
+const errs = [];
+p.on('pageerror', e => errs.push(e.message));
+p.on('console', m => m.type()==='error' && errs.push(m.text()));
+await p.goto('http://localhost:8123/tools/mascot-preview.html', { waitUntil: 'networkidle' });
+await p.waitForTimeout(process.argv[3] ? Number(process.argv[3]) : 600);
+await p.screenshot({ path: process.argv[2] || '/tmp/mascot.png' });
+console.log(errs.length ? 'ERRORS: ' + errs.join('; ') : 'clean');
+await b.close();

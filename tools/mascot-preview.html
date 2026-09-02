@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gullu — moods</title>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/mascot.css">
+<style>
+  body { background: linear-gradient(160deg, #6f5bbd, #574399); }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; padding: 28px; justify-content: center; align-items: flex-end; }
+  .cell { text-align: center; color: #fff; font-weight: 800; }
+  .cell svg { width: 190px; height: 190px; }
+  .cell span { display: block; margin-top: 8px; font-size: 18px; opacity: .9; }
+</style>
+</head>
+<body>
+  <div class="row" id="row"></div>
+  <script type="module">
+    import { createMascot, setMood } from '../js/core/mascot.js';
+    const row = document.getElementById('row');
+    for (const mood of ['idle', 'think', 'happy', 'cheer', 'oops']) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const svg = createMascot({ size: 190 });
+      setMood(svg, mood);
+      cell.append(svg, Object.assign(document.createElement('span'), { textContent: mood }));
+      row.appendChild(cell);
+    }
+  </script>
+</body>
+</html>
