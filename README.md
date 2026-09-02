@@ -125,6 +125,8 @@ No framework, no bundler, no dependencies at runtime.
 
 | | |
 |---|---|
+| **Mascot** | Gullu the owl — hand-authored SVG with five CSS moods. No image files, crisp at any size. |
+| **Backdrops** | Per-category tint, drifting clouds and floating motifs, all CSS. |
 | **Art** | Emoji and inline SVG. **No artwork files at all** — the only images in the repo are the app icons, and a script generates those. |
 | **Sound** | Synthesised with the Web Audio API. **Zero audio files.** |
 | **Voice** | The tablet's own `speechSynthesis`, `hi-IN` and `en-IN`. |
@@ -138,12 +140,14 @@ The whole game is about 310 KB and loads instantly.
 ```
 index.html            app shell
 sw.js                 offline cache
-css/                  base tokens, screens, shared game chrome
-js/core/              rng, i18n, audio, state, ui, drag, engine, catalog
+css/                  base tokens, screens, game chrome, mascot, scene
+js/core/              rng, i18n, audio, state, ui, drag, engine, catalog,
+                      mascot, scene
 js/content/           packs.js (128 items), worlds.js
 js/games/             20 engines, one file each
 js/screens/           hub, map, level select, settings
-tools/                icon generator, screenshot and check helpers
+tools/                icon generator, screenshot and check helpers,
+                      mascot-preview.html for iterating on Gullu's moods
 docs/                 the screenshots this README links to
 tests/                unit (logic), smoke (all 300 levels), offline
 ```
