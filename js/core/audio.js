@@ -145,6 +145,10 @@ const SFX = {
   /** Counting cadence — pitch rises with each item counted. */
   count:    (i = 0) => note(hz(67 + Math.min(i, 10)), 0, 0.12, { type: 'triangle', gain: 0.32 }),
 
+  /** Kicking the football: a short thump with a little air in it. */
+  kick:     () => { note(hz(50), 0, 0.16, { type: 'sine', gain: 0.5, glideTo: hz(38) });
+                    noise(0, 0.12, { freq: 380, q: 0.9, gain: 0.22 }); },
+
   /** Unlocking a new world. */
   unlock:   () => { [67, 72, 76, 79, 84].forEach((n, i) =>
                       note(hz(n), i * 0.08, 0.4, { type: 'sine', gain: 0.34 })); },
@@ -182,8 +186,38 @@ function pickVoice() {
       || null;
 }
 
+/* ------------------------------------------------------------
+   Who is listening for speech
+
+   The mascot needs to move its beak while the tablet is talking,
+   but audio.js has no business knowing about a mascot. So it just
+   announces when speech starts and stops, and whoever cares
+   subscribes. Counted rather than a flag, because a prompt and a
+   praise line can overlap.
+   ------------------------------------------------------------ */
+
+const speechListeners = new Set();
+let speaking = 0;
+
+/** Subscribe to speech starting/stopping. Returns an unsubscribe. */
+export function onSpeaking(fn) {
+  speechListeners.add(fn);
+  fn(speaking > 0);
+  return () => speechListeners.delete(fn);
+}
+
+function announce() {
+  const on = speaking > 0;
+  speechListeners.forEach((fn) => { try { fn(on); } catch { /* never fatal */ } });
+}
+
+function speechStarted() { speaking++; announce(); }
+function speechEnded() { speaking = Math.max(0, speaking - 1); announce(); }
+
 function stopSpeech() {
   try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
+  speaking = 0;
+  announce();
 }
 
 /**
@@ -197,6 +231,8 @@ export function speak(text, { rate, pitch, interrupt = true } = {}) {
     try {
       if (interrupt) stopSpeech();
       const u = new SpeechSynthesisUtterance(String(text));
+      let done = false;
+      const finish = () => { if (done) return; done = true; speechEnded(); resolve(); };
       const v = pickVoice();
       if (v) u.voice = v;
       u.lang = speechLocale();
@@ -205,11 +241,13 @@ export function speak(text, { rate, pitch, interrupt = true } = {}) {
       u.rate = rate ?? (getLang() === 'hi' ? 0.82 : 0.88);
       u.pitch = pitch ?? 1.15;
       u.volume = 1;
-      u.onend = () => resolve();
-      u.onerror = () => resolve();
+      u.onstart = () => speechStarted();
+      u.onend = finish;
+      u.onerror = finish;
       window.speechSynthesis.speak(u);
-      // Safety net: some engines never fire onend for short strings.
-      setTimeout(resolve, 1200 + String(text).length * 90);
+      // Safety net: some engines never fire onend for short strings, and
+      // a beak left flapping forever would be worse than none at all.
+      setTimeout(finish, 1200 + String(text).length * 90);
     } catch {
       resolve();
     }

@@ -13,11 +13,13 @@ import { totalStars, completedCount } from '../core/state.js';
 import { TOTAL_LEVELS } from '../core/catalog.js';
 import { speak } from '../core/audio.js';
 import { createScene } from '../core/scene.js';
-import { createMascot, setMood } from '../core/mascot.js';
+import { createMascot, setMood, bindSpeech } from '../core/mascot.js';
 
 export function hubScreen({ go }) {
   const gullu = createMascot({ size: 150 });
   gullu.classList.add('hub__mascot');
+  // Unsubscribed when the screen is replaced — hub screens are short-lived.
+  const unbind = bindSpeech(gullu);
 
   const screen = el('div.screen.hub.screen--scened', {},
     createScene(),
@@ -40,5 +42,6 @@ export function hubScreen({ go }) {
     setTimeout(() => setMood(gullu, 'idle'), 1800);
     speak(`${t('app.title')}. ${t('app.play')}!`);
   }, 500);
+  screen.addEventListener('DOMNodeRemoved', () => unbind(), { once: true });
   return screen;
 }

@@ -15,6 +15,8 @@
                 because the game never tells a child they failed
    ============================================================ */
 
+import { onSpeaking } from './audio.js';
+
 const MOODS = ['idle', 'think', 'happy', 'cheer', 'oops'];
 
 /**
@@ -109,4 +111,14 @@ export function flashMood(svg, mood, ms = 1400) {
   setMood(svg, mood);
   const id = setTimeout(() => setMood(svg, 'idle'), ms);
   return () => clearTimeout(id);
+}
+
+/**
+ * Make the owl talk whenever the tablet is speaking: beak moving,
+ * a little nod. Layers over the current mood rather than replacing
+ * it, so a happy Gullu praising a child is still visibly happy.
+ * Returns an unsubscribe for the screen's teardown.
+ */
+export function bindSpeech(svg) {
+  return onSpeaking((on) => svg?.classList.toggle('mascot--talking', on));
 }

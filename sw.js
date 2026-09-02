@@ -12,7 +12,7 @@
    still opens instantly and still works with no network at all.
    ============================================================ */
 
-const CACHE = 'dimaag-ka-khel-v3';
+const CACHE = 'dimaag-ka-khel-v4';
 
 const SHELL = [
   './',
@@ -36,6 +36,7 @@ const SHELL = [
   './js/core/engine.js',
   './js/core/mascot.js',
   './js/core/scene.js',
+  './js/core/toy.js',
   './js/core/catalog.js',
   './js/content/packs.js',
   './js/content/worlds.js',

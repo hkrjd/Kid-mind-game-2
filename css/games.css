@@ -260,3 +260,39 @@
 .count-item--static:active { transform: none; }
 .answer-row  { display: flex; gap: var(--gap); flex-wrap: wrap; justify-content: center; }
 .big-emoji   { font-size: clamp(52px, 12vmin, 130px); line-height: 1; }
+
+/* ---------- the football ----------
+   A toy, not a control of the puzzle. It is still a thing a child
+   taps, so it meets the same touch floor as everything else. */
+.toy-ball {
+  position: absolute;
+  z-index: 2;
+  width: var(--touch);
+  height: var(--touch);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: clamp(56px, 9vmin, 84px);
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  filter: drop-shadow(0 10px 6px rgba(0,0,0,.28));
+  animation: ball-idle 2.8s ease-in-out infinite;
+}
+.toy-ball[hidden] { display: none; }
+.toy-ball--kick { animation: ball-kick .95s cubic-bezier(.3, 1.35, .6, 1); }
+
+@keyframes ball-idle { 50% { transform: translateY(-9px) rotate(7deg); } }
+@keyframes ball-kick {
+  0%   { transform: translateY(0) rotate(0); }
+  32%  { transform: translateY(-140px) rotate(210deg) scale(1.08); }
+  68%  { transform: translateY(-18px) rotate(340deg); }
+  82%  { transform: translateY(-42px) rotate(360deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) { .toy-ball { animation: none; } }
+body.no-motion .toy-ball { animation: none; }

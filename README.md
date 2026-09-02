@@ -125,7 +125,8 @@ No framework, no bundler, no dependencies at runtime.
 
 | | |
 |---|---|
-| **Mascot** | Gullu the owl — hand-authored SVG with five CSS moods. No image files, crisp at any size. |
+| **Mascot** | Gullu the owl — hand-authored SVG with five CSS moods, and a beak that moves whenever the tablet is speaking. No image files, crisp at any size. |
+| **Football** | A ball in whatever corner of the play field is empty. Kicking it is never a mistake; Gullu kicks it himself when it sits idle and cheers when the child does. It hides when every corner is taken, so it is never on top of a card. |
 | **Backdrops** | Per-category tint, drifting clouds and floating motifs, all CSS. |
 | **Art** | Emoji and inline SVG. **No artwork files at all** — the only images in the repo are the app icons, and a script generates those. |
 | **Sound** | Synthesised with the Web Audio API. **Zero audio files.** |
@@ -142,7 +143,7 @@ index.html            app shell
 sw.js                 offline cache
 css/                  base tokens, screens, game chrome, mascot, scene
 js/core/              rng, i18n, audio, state, ui, drag, engine, catalog,
-                      mascot, scene
+                      mascot, scene, toy (the football)
 js/content/           packs.js (128 items), worlds.js
 js/games/             20 engines, one file each
 js/screens/           hub, map, level select, settings

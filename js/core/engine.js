@@ -17,7 +17,8 @@ import { el, gameBar, rewardOverlay, confetti, flashOk, flashOops,
          showHint, clearAllHints, delay } from './ui.js';
 import { t, randomPraise, randomOops } from './i18n.js';
 import { createScene } from './scene.js';
-import { createMascot, setMood, flashMood } from './mascot.js';
+import { createMascot, setMood, flashMood, bindSpeech } from './mascot.js';
+import { createFootball } from './toy.js';
 import { speak, sfx, say } from './audio.js';
 import { noteStruggle, struggleFor, getSetting } from './state.js';
 
@@ -73,6 +74,7 @@ export class GameEngine {
     this.root.prepend(createScene(this.level.worldId));
     this.mascot = createMascot();
     this.mascot.classList.add('mascot--bar');
+    this.cleanup(bindSpeech(this.mascot));
 
     host.appendChild(this.root);
 
@@ -91,6 +93,14 @@ export class GameEngine {
     // Next to the prompt he is reacting to, and clear of the field.
     chrome.bar.insertBefore(this.mascot, chrome.bar.children[1]);
     this.root.prepend(chrome.bar);
+
+    // A football for the empty part of the screen, which Gullu plays
+    // with too. It places itself only where nothing else is.
+    this.cleanup(createFootball({
+      field: this.field,
+      after: (ms, fn) => this.after(ms, fn),
+      onKick: () => { if (!this.solved) this.cheerUp('happy', 1100); },
+    }));
 
     // Let the field paint before the voice starts, so the child is
     // looking at the puzzle while it is described.
