@@ -9,6 +9,7 @@
 import { t } from './i18n.js';
 import { sfx } from './audio.js';
 import { getSetting } from './state.js';
+import { createMascot, setMood } from './mascot.js';
 
 /**
  * Apply a style object. Custom properties (--cols, --bin-color…)
@@ -151,8 +152,15 @@ export function rewardOverlay({ stars = 3, title, onAgain, onNext, onHome }) {
     starRow.appendChild(el('span.reward__star', { text: i < stars ? '⭐' : '☆' }));
   }
 
+  // Gullu does the celebrating here rather than in the top bar, where
+  // this very overlay was covering him up. He is the biggest thing on
+  // the screen because winning is the biggest thing in the game.
+  const party = createMascot({ size: 220 });
+  party.classList.add('mascot--party');
+  setMood(party, 'cheer');
+
   const overlay = el('div.reward', {},
-    el('div.reward__icon', { text: '🎉' }),
+    el('div.reward__icon', {}, party),
     el('h2.reward__title', { text: title || t('reward.done') }),
     starRow,
     el('div.reward__actions', {},
@@ -162,6 +170,15 @@ export function rewardOverlay({ stars = 3, title, onAgain, onNext, onHome }) {
 
   sfx('win');
   for (let i = 0; i < stars; i++) setTimeout(() => sfx('star'), 400 + i * 220);
+
+  // Gullu keeps cheering rather than settling after one round: the
+  // child decides when the party is over by tapping Next.
+  const keepGoing = setInterval(() => {
+    if (!overlay.isConnected) { clearInterval(keepGoing); return; }
+    setMood(party, 'idle');
+    requestAnimationFrame(() => setMood(party, 'cheer'));
+  }, 3000);
+
   return overlay;
 }
 

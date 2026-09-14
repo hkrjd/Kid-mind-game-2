@@ -29,7 +29,7 @@
 /* Give every animated part its own local origin, or SVG rotates
    things about the top-left of the whole canvas. */
 .mascot .m-all, .mascot .m-body, .mascot .m-eye,
-.mascot .m-wing, .mascot .m-pupil, .mascot .m-spark {
+.mascot .m-wing, .mascot .m-pupil, .mascot .m-spark, .mascot .m-beak {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -69,23 +69,44 @@
 @keyframes m-hop  { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-18px); } }
 @keyframes m-wave { 50% { transform: rotate(-28deg) translateY(-6px); } }
 
-/* ---------------- cheer: the win screen ---------------- */
+/* ---------------- cheer: the win screen ----------------
+   Winning a level is the biggest thing that happens in this game,
+   so it gets the biggest thing Gullu does: a spinning jump, a squashy
+   landing, two happy bounces, wings going the whole time and sparks
+   bursting outward. It runs long enough to be watched rather than
+   glimpsed. */
 
-.mascot--cheer .m-all     { animation: m-cheer .8s var(--ease-pop) 3; }
-.mascot--cheer .m-wing--l { animation: m-wave .26s ease-in-out 9; }
-.mascot--cheer .m-wing--r { animation: m-wave-r .26s ease-in-out 9; }
-.mascot--cheer .m-cheek   { opacity: .9; }
-.mascot--cheer .m-eye     { transform: scaleY(.55); }
-.mascot--cheer .m-spark   { animation: m-sparkle 1s ease-in-out infinite; }
-.mascot--cheer .m-spark:nth-child(2) { animation-delay: .28s; }
-.mascot--cheer .m-spark:nth-child(3) { animation-delay: .55s; }
+.mascot--cheer .m-all     { animation: m-cheer 1.5s cubic-bezier(.3, 1.3, .55, 1) 2; }
+.mascot--cheer .m-body    { animation: m-cheer-squash 1.5s ease-in-out 2; }
+.mascot--cheer .m-wing--l { animation: m-wave .22s ease-in-out 14; }
+.mascot--cheer .m-wing--r { animation: m-wave-r .22s ease-in-out 14; }
+.mascot--cheer .m-cheek   { opacity: .95; }
+.mascot--cheer .m-eye     { transform: scaleY(.5); }
+.mascot--cheer .m-spark   { animation: m-burst 1.1s ease-out infinite; }
+.mascot--cheer .m-spark:nth-child(2) { animation-delay: .14s; }
+.mascot--cheer .m-spark:nth-child(3) { animation-delay: .3s; }
+.mascot--cheer .m-spark:nth-child(4) { animation-delay: .46s; }
+.mascot--cheer .m-spark:nth-child(5) { animation-delay: .62s; }
+.mascot--cheer .m-spark:nth-child(6) { animation-delay: .78s; }
 
-@keyframes m-cheer   { 0%, 100% { transform: translateY(0) rotate(0); }
-                       30% { transform: translateY(-26px) rotate(-7deg); }
-                       65% { transform: translateY(-8px) rotate(6deg); } }
+@keyframes m-cheer {
+  0%   { transform: translateY(0) rotate(0) scale(1); }
+  10%  { transform: translateY(6px) scale(1.06, .9); }        /* crouch */
+  38%  { transform: translateY(-56px) rotate(200deg) scale(.94, 1.08); }
+  58%  { transform: translateY(-52px) rotate(360deg) scale(.96, 1.06); }
+  72%  { transform: translateY(4px) rotate(360deg) scale(1.12, .86); }  /* land */
+  82%  { transform: translateY(-20px) rotate(360deg) scale(.98, 1.04); }
+  91%  { transform: translateY(0) rotate(360deg) scale(1.05, .95); }
+  96%  { transform: translateY(-8px) rotate(360deg); }
+  100% { transform: translateY(0) rotate(360deg) scale(1); }
+}
+@keyframes m-cheer-squash { 72% { transform: scaleY(.93); } 80% { transform: scaleY(1.04); } }
 @keyframes m-wave-r  { 50% { transform: rotate(28deg) translateY(-6px); } }
-@keyframes m-sparkle { 0%, 100% { opacity: 0; transform: scale(.4); }
-                       50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
+@keyframes m-burst {
+  0%   { opacity: 0; transform: translate(0, 0) scale(.2) rotate(0); }
+  25%  { opacity: 1; transform: translate(calc(var(--sx) * .4), calc(var(--sy) * .4)) scale(1.25) rotate(60deg); }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(.35) rotate(200deg); }
+}
 
 /* ---------------- oops: sympathy, never disapproval ----------------
    A five-year-old reads a frown as "you failed", which is the one
@@ -115,6 +136,12 @@
 @keyframes m-nod  { 50% { transform: translateY(2px) rotate(2deg); } }
 
 /* ---------------- placement ---------------- */
+
+/* The star of the win screen: big enough to actually watch. */
+.mascot--party {
+  width: clamp(150px, 26vmin, 250px);
+  height: clamp(150px, 26vmin, 250px);
+}
 
 /* In a level the mascot rides in the top bar rather than floating
    over the field. Floating put him across a jigsaw slot and a memory

@@ -84,11 +84,15 @@ export function createMascot({ size = 120 } = {}) {
         <ellipse class="m-cheek m-cheek--r" cx="138" cy="112" rx="9" ry="6"/>
       </g>
 
-      <!-- sparkles, only for cheering -->
+      <!-- sparkles, only for cheering. Each bursts outward along its
+           own direction, set as --sx/--sy on the element. -->
       <g class="m-sparks">
-        <path class="m-spark" d="M30 44 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z"/>
-        <path class="m-spark" d="M168 34 l3 8 8 3 -8 3 -3 8 -3-8 -8-3 8-3z"/>
-        <path class="m-spark" d="M162 140 l3 8 8 3 -8 3 -3 8 -3-8 -8-3 8-3z"/>
+        <path class="m-spark" style="--sx:-34px; --sy:-30px" d="M34 48 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z"/>
+        <path class="m-spark" style="--sx: 34px; --sy:-30px" d="M160 48 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z"/>
+        <path class="m-spark" style="--sx:  0px; --sy:-42px" d="M96 22 l4 10 10 4 -10 4 -4 10 -4-10 -10-4 10-4z"/>
+        <path class="m-spark" style="--sx:-40px; --sy: 18px" d="M28 118 l3 8 8 3 -8 3 -3 8 -3-8 -8-3 8-3z"/>
+        <path class="m-spark" style="--sx: 40px; --sy: 18px" d="M166 118 l3 8 8 3 -8 3 -3 8 -3-8 -8-3 8-3z"/>
+        <path class="m-spark" style="--sx: 22px; --sy: 40px" d="M140 158 l3 8 8 3 -8 3 -3 8 -3-8 -8-3 8-3z"/>
       </g>
     </g>`;
   return svg;

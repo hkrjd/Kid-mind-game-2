@@ -293,7 +293,8 @@ export class GameEngine {
     await this.wait(420);
     if (this.destroyed) return;
 
-    confetti(this.root);
+    // A clean win gets a heavier shower than one that needed help.
+    confetti(this.root, 50 + stars * 40);
     this._moodOff?.();
     setMood(this.mascot, 'cheer');
     speak(randomPraise(this.rng));

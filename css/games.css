@@ -178,7 +178,12 @@
   background: rgba(20,14,40,.72);
   animation: screen-in var(--dur) var(--ease-pop);
 }
-.reward__icon  { font-size: clamp(60px, 14vmin, 140px); animation: pop var(--dur-slow) var(--ease-pop); }
+.reward__icon  {
+  display: grid;
+  place-items: center;
+  font-size: clamp(60px, 14vmin, 140px);
+  animation: pop var(--dur-slow) var(--ease-pop);
+}
 .reward__title { margin: 0; color: #fff; font-size: var(--fs-huge); font-weight: 900; text-shadow: 0 4px 0 rgba(0,0,0,.28); }
 .reward__stars { display: flex; gap: .2em; font-size: clamp(40px, 9vmin, 84px); }
 .reward__star  { animation: star-in var(--dur-slow) var(--ease-pop) backwards; }
@@ -190,7 +195,7 @@
 /* ---------- Confetti ---------- */
 .confetti {
   position: absolute; top: -5vh;
-  width: 1.4vmin; height: 2.4vmin;
+  width: 1.7vmin; height: 2.9vmin;
   border-radius: 2px;
   animation: fall linear forwards;
   pointer-events: none;
